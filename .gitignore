@@ -3,6 +3,8 @@
 /Runtime/Cache
 /Runtime/Logs
 /Runtime/Temp
+/Runtime/Data/_feifeicms/player.php
+/Lib/Lib/Action/Plus/UpdateAction.class.php
 *.log
 *.temp
 .idea
