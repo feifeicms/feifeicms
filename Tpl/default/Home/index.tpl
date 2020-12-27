@@ -7,7 +7,7 @@
 <body class="index">
 <include file="BlockTheme:header" />
 <!-- -->
-<notempty name="site_hot">
+<if condition="C('site_hot')"> 
 <div class="container bg-white">
   <div class="py-2 text-ellipsis">
     <strong class="text-green">热门搜索：</strong>
@@ -15,14 +15,14 @@
   </div>
 </div>
 <div class="clearfix pb-1"></div>
-</notempty>
+</if>
 <!-- -->
 <div class="container ff-bg">
 <div class="row ff-row slide py-1">
 	<div class="col-md-8 ff-col">
 		<include file="Slide:index" />
 	</div>
-	<ul class="list-unstyled ff-col col-md-4 vod-item-img visible-lg visible-md">
+	<ul class="list-unstyled col-md-4 ff-col vod-item-img visible-lg visible-md">
 		<volist name="item_slide" id="feifei" offset="4" length="4">
 		<li class="col-md-6">
 			<p class="image">
@@ -30,7 +30,9 @@
 					<img class="img-responsive img-thumbnail ff-img" data-original="{$feifei.slide_logo|ff_url_img}" alt="{$feifei.slide_name}">
 				</a>
 			</p>
-			<h4><a href="{$feifei.slide_url}">{$feifei.slide_name|msubstr=0,22,true}</a></h4>
+			<h4 class="text-mr-1">
+				<a href="{$feifei.slide_url}">{$feifei.slide_name|msubstr=0,22,true}</a>
+			</h4>
 		</li>
 		</volist>
 	</ul>
