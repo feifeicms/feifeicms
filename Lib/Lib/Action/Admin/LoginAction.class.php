@@ -1,20 +1,23 @@
 <?php
 class LoginAction extends Action{
-    //默认操作
-    public function index(){
+	//初始化
+	public function _initialize(){
+		session_start();
+	}
+	//默认操作
+	public function index(){
 		if (!$_SESSION['AdminLogin']) {
 			header("Content-Type:text/html; charset=utf-8");
-			echo('请从后台管理入口登录。');
-			exit();
+			exit('请从后台管理入口登录。');
 		}
 		if ($_SESSION[C('USER_AUTH_KEY')]) {
 			redirect("?s=Admin-Index");
 		}
 		$this->display('./Public/system/login.html');
-    }
+	}
 	//登陆检测_前置
 	public function _before_check(){
-	    if (empty($_POST['user_name'])) {
+	  if (empty($_POST['user_name'])) {
 			$this->error(L('login_username_check'));
 		}
 		if (empty($_POST['user_pwd'])) {
@@ -22,10 +25,10 @@ class LoginAction extends Action{
 		}			
 	}
 	//登陆检测
-    public function check(){
-        $where = array();
+  public function check(){
+    $where = array();
 		$where['admin_name'] = trim($_POST['user_name']);
-		$rs = D("Admin.Admin");
+		$rs = D("Admin");
 		$list = $rs->where($where)->find();
         if (NULL == $list) {
             $this->error(L('login_username_not'));
@@ -45,15 +48,15 @@ class LoginAction extends Action{
 		$data['admin_ip'] = get_client_ip();
 		$rs->save($data);					
 		redirect('?s=Admin-Index');
-    }
+  }
 	// 用户登出
-    public function logout(){
-        if (isset($_SESSION[C('USER_AUTH_KEY')])) {
+  public function logout(){
+    if (isset($_SESSION[C('USER_AUTH_KEY')])) {
 			unset($_SESSION);
 			session_destroy();
-        }
+    }
 		header("Content-Type:text/html; charset=utf-8");
 		echo ('您已经退出网站管理后台，如需操作请重新登录！');
-    }
+  }
 }
 ?>

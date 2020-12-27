@@ -2,6 +2,7 @@
 class PlayerAction extends BaseAction{	
 	// 显示分类
   public function show(){
+		$maxOrder = D("Player")->max('player_order');
 		$list= D("Player")->order('player_order asc,player_id asc')->select();
 		$player = array();
 		foreach($list as $key=>$value){
@@ -9,7 +10,8 @@ class PlayerAction extends BaseAction{
 				$player[$value['player_name_en']] = array(''.$value['player_name_zh'].'',''.$value['player_info'].'',''.$value['player_copyright'].'',''.$value['player_jiexi'].'');
 			}
 		}
-		F('_feifeicms/player',$player);
+		F('_feifeicms/player',$player);//缓存播放列表
+		$this->assign('max_order',$maxOrder);	
 		$this->assign('list_player',$list);	
 		$this->display('./Public/system/player_show.html');
   }
@@ -18,21 +20,23 @@ class PlayerAction extends BaseAction{
 		$rs = D("Player");
 		if ($rs->create()) {
 			if ( false !==  $rs->add() ) {
+				//$code = read_file('./Public/player/iframe.js');
+				//write_file('./Public/player/'.$_POST['player_name_en'].'.js', $code);
 				$this->assign("jumpUrl",'?s=Admin-Player-Show');
 				$this->success('添加播放器来源成功！');
 			}else{
 				$this->error('添加播放器来源错误');
 			}
 		}else{
-		    $this->error($rs->getError());
+		   $this->error($rs->getError());
 		}
 	}	
 	// 批量更新数据
   public function updateall(){
 		$rs = D("Player");
 		$array = $_POST;
-		$data = array();
 		foreach($array['ids'] as $key=>$value){
+			$data = array();
 		  $data['player_order'] = intval($array['player_order'][$value]);
 			$data['player_copyright'] = intval($array['player_copyright'][$value]);
 			$data['player_name_zh'] = $array['player_name_zh'][$value];

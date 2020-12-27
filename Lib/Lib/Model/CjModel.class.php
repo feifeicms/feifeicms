@@ -20,6 +20,7 @@ class CjModel extends Model {
 		$params['m'] = 'api';
 		$params['a'] = 'json';
 		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
 		ksort($params);
 		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
 		if($admin['xmltype'] == 'xml'){
@@ -34,32 +35,6 @@ class CjModel extends Model {
 				return $this->vod_xml($admin, $params);
 			}
 		}
-	}
-	private function vod_json($admin, $params){
-		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
-		$html = ff_file_get_contents($url);
-		//是否采集到数据
-		if(!$html){
-			return array('status'=>601, 'infos'=>'连接API资源库失败，通常为服务器网络不稳定或禁用了采集。');
-		}
-		//数据包验证
-		$json = json_decode($html, true);
-		if( is_null($json) ){
-			return array('status'=>602, 'type'=>'json', 'infos'=>'JSON格式不正确，不支持采集。');
-		}
-		//资源库返回的状态501 502 503 3.3版本前没有status字段
-		if($json['status'] && $json['status'] != 200){
-			return array('status'=>$json['status'], 'type'=>'json', 'infos'=>$json['data']);
-		}
-		//不是feifeicms的格式
-		if(!$json['list']){
-			return array('status'=>602, 'type'=>'json', 'infos'=>'不是FeiFeiCms系统的接口，不支持采集。');
-		}
-		//返回正确的数据集合
-		return array('status'=>200, 'type'=>'json', 'infos'=>$json);
-	}
-	private function vod_xml($admin, $params){
-		return $this->vod_xml_caiji($admin, $params);
 	}
 	public function vod_update($admin, $params, $json){
 		echo'<style type="text/css">
@@ -89,7 +64,6 @@ class CjModel extends Model {
 		}else{
 			foreach($json['data'] as $key=>$vod){
 				echo '<li>第<span>'.(($admin['page']-1)*$json['page']['pagesize']+$key+1).'</span>个影片 ['.ff_list_find($vod['vod_cid']).'] '.$vod['vod_name'].'</li>';
-				$vod['vod_inputer'] = 'xml_'.$admin['cjid'];
 				$this->vod_db($vod);
 				ob_flush();flush();
 			}
@@ -119,6 +93,11 @@ class CjModel extends Model {
 			echo '<li class="p">未匹配到对应栏目分类，不做处理，请先转换分类!</li>';
 			return false;
 		}
+		//来源标识验证
+		if(!$vod['vod_reurl']){
+			echo '<li class="p">来源标识为空，不做处理!</li>';
+			return false;
+		}
 		//3.5后改为一次性修改不再单独一个一个检查
 		$array_vod_old = $this->vod_db_find($vod);
 		if($array_vod_old['vod_id']){
@@ -131,47 +110,37 @@ class CjModel extends Model {
 	//检测是否已存在相同影片
 	private function vod_db_find($vod){
 		// 要查询检查的字段
-		$field = 'vod_id,vod_cid,vod_name,vod_title,vod_actor,vod_continu,vod_isend,vod_total,vod_inputer,vod_play,vod_url';
-		// 检测来源是否完全相同
+		$field = 'vod_id,vod_cid,vod_name,vod_title,vod_actor,vod_continu,vod_isend,vod_total,vod_inputer,vod_douban_id,vod_play,vod_url';
+		// 按来源检测
 		$array = M('Vod')->field($field)->where('vod_reurl="'.$vod['vod_reurl'].'"')->order('vod_id desc')->find();
 		if($array){
 			return $array;
 		}
-		// 检测影片名称是否相等(需防止同名的电影与电视冲突所以增加了CID条件)
-		$array = M('Vod')->field($field)->where('vod_cid='.$vod['vod_cid'].' and vod_name="'.$vod['vod_name'].'" ')->order('vod_id desc')->find();
-		if($array){
-			//演员完全相等时 更新该影片
-			if( $array['vod_actor'] == $vod['vod_actor'] ){
-				return $array;
-			}
-			//演员有部份相同时更新该影片
-			$arr_actor_1 = explode(',', ff_xml_vodactor($vod['vod_actor']));
-			$arr_actor_2 = explode(',', ff_xml_vodactor($array['vod_actor']));
-			if(array_intersect($arr_actor_1,$arr_actor_2)){
+		// 按豆瓣检测
+		if($vod['vod_douban_id']){
+			if( $array = M('Vod')->field($field)->where('vod_douban_id="'.$vod['vod_douban_id'].'"')->order('vod_id desc')->find() ){
 				return $array;
 			}
 		}
-		//  检测影片名称相似度
-		if(C('collect_name')){
-			$length = ceil(strlen($vod['vod_name'])/3) - intval(C('collect_name'));
-			if($length > 1){
-				$where = array();
-				$where['vod_cid'] = array('eq', $vod['vod_cid']);
-				$where['vod_name'] = array('like', msubstr($vod['vod_name'],0,$length).'%');
-				$array = M('Vod')->field($field)->where($where)->order('vod_id desc')->find();
-				if($array){
-					// 主演完全相同 则检查是否需要更新
-					if(!empty($array['vod_actor']) && !empty($vod['vod_actor']) ){
-						$arr_actor_1 = explode(',', ff_xml_vodactor($vod['vod_actor']));
-						$arr_actor_2 = explode(',', ff_xml_vodactor($array['vod_actor']));
-						if(!array_diff($arr_actor_1,$arr_actor_2) && !array_diff($arr_actor_2,$arr_actor_1)){//若差集为空
-							return $array;
-						}
+		// 按标题检测
+		$where = array();
+		$where['vod_cid'] = array('eq', $vod['vod_cid']);
+		$where['vod_name'] = array('like', $vod['vod_name'].'%');
+		$array_list = M('Vod')->field($field)->where($where)->limit(20)->order('vod_id desc')->select();
+		foreach($array_list as $key=>$value){
+			// 有相同标题是否需再次验证主演
+			if($value['vod_name'] == $vod['vod_name']){
+				if( C('collect_actor') ){
+					$arr_actor_1 = explode(',', ff_xml_vodactor($vod['vod_actor']));
+					$arr_actor_2 = explode(',', ff_xml_vodactor($value['vod_actor']));
+					if( array_intersect($arr_actor_1,$arr_actor_2) ){
+						return $array_list[$key];
+					}else{
+						$vod['vod_status'] = -1;//标识为需人工验证审核
+						return $vod;
 					}
-					// 不是同一资源库 则标识为相似待审核
-					if(!in_array($vod['vod_inputer'], $array)){
-						$vod['vod_status'] = -1;
-					}
+				}else{
+					return $value;
 				}
 			}
 		}
@@ -179,44 +148,45 @@ class CjModel extends Model {
 	}
 	//新增影片
 	private function vod_db_insert($vod){
-		if(empty($vod['vod_hits'])){
-			$vod['vod_hits'] = mt_rand(1, C('collect_hits'));
-		}
+		$vod['vod_addtime'] = time();
+		$vod['vod_letter'] 	= ff_url_letter($vod['vod_name']);
+		$vod['vod_keywords'] 	= trim($vod['vod_keywords']);
 		if(empty($vod['vod_ename'])){
 			$vod['vod_ename'] = ff_pinyin($vod['vod_name']);
 		}
+		if(empty($vod['vod_hits'])){
+			$vod['vod_hits'] = mt_rand(0, C('collect_hits'));
+		}
 		if(empty($vod['vod_up'])){
-			$vod['vod_up'] = mt_rand(1, C('collect_updown'));
+			$vod['vod_up'] = mt_rand(0, C('collect_updown'));
 		}
 		if(empty($vod['vod_down'])){
-			$vod['vod_down'] = mt_rand(1, C('collect_updown'));
+			$vod['vod_down'] = mt_rand(0, C('collect_updown'));
 		}
 		if( empty($vod['vod_gold']) ){
-			$vod['vod_gold'] = mt_rand(1, C('collect_gold'));
+			$vod['vod_gold'] = mt_rand(0, C('collect_gold'));
 		}
 		if( empty($vod['vod_golder']) ){
-			$vod['vod_golder'] = mt_rand(1, C('collect_golder'));
+			$vod['vod_golder'] = mt_rand(0, C('collect_golder'));
 		}
-		if( empty($vod['vod_addtime']) ){
-			$vod['vod_addtime'] = time();
-		}else{
-			$vod['vod_addtime'] = strtotime($vod['vod_addtime']);
+		// 播放器处理（去掉未定义或隐藏的播放器）
+		$play_list_db = $this->vod_array2url($this->vod_url2array($vod['vod_play'], $vod['vod_url']));
+		if(!$play_list_db["vod_play"]){
+			return '播放来源('.$vod['vod_play'].')未添加或隐藏，此影片跳过！';
 		}
-		$vod['vod_letter'] 	= ff_url_letter($vod['vod_name']);
+		$vod['vod_play'] = $play_list_db['vod_play'];
+		$vod['vod_url'] = $play_list_db['vod_url'];
+		unset($play_list_db);
 		// 随机伪原创
 		if(C('collect_original')){
 			$vod['vod_content'] = ff_rand_str($vod['vod_content']);
 		}
 		// 自动下载远程图片
-		$vod['vod_pic'] = D('Img')->down_load($vod['vod_pic']);	
-		// 入库
+		$vod['vod_pic'] = D('Img')->down_load($vod['vod_pic']);
+		// 视频入库
 		$id = M('Vod')->data($vod)->add();
 		// 关联多分类及TAG相关
 		if($id){
-			// 增加多分类
-			if( $vod['vod_type'] ){
-				D('Tag')->tag_update($id, $vod["vod_type"], 'vod_type');
-			}
 			// 自动获取关键词tag
 			if(empty($vod['vod_keywords']) && C('collect_tags')){
 				$vod['vod_keywords'] = ff_tag_auto($vod["vod_name"], $vod["vod_content"]);
@@ -224,7 +194,11 @@ class CjModel extends Model {
 			// 增加关联tag
 			if( $vod['vod_keywords'] ){
 				D('Tag')->tag_update($id, $vod["vod_keywords"], 'vod_tag');
-			}			
+			}
+			// 增加多分类
+			if( $vod['vod_type'] ){
+				D('Tag')->tag_update($id, $vod["vod_type"], 'vod_type');
+			}
 			return '视频添加成功('.$id.')';
 		}
 		return '视频添加失败：'.M('Vod')->getDbError();
@@ -246,35 +220,44 @@ class CjModel extends Model {
 		// 组合更新条件及内容(以最后一次更新的库为检测依据)
 		$edit['vod_id'] = $vod_old['vod_id'];
 		$edit['vod_addtime'] = time();
-		$edit['vod_name'] = $vod['vod_name'];
-		$edit['vod_inputer'] = $vod['vod_inputer'];
-		$edit['vod_reurl'] = $vod['vod_reurl'];
 		$edit['vod_play'] = $play_list_db['vod_play'];
 		$edit['vod_url'] = $play_list_db['vod_url'];
-		// 存在的字段才更新
-		if(isset($vod['vod_total'])){
-			$edit['vod_total'] = $vod['vod_total'];	
-		}
+		// 存在字段才更新
 		if(isset($vod['vod_continu'])){
 			$edit['vod_continu'] = $vod['vod_continu'];	
 		}
 		if(isset($vod['vod_isend'])){
 			$edit['vod_isend'] = $vod['vod_isend'];	
 		}
-		if(isset($vod['vod_filmtime'])){ 
-			$edit['vod_filmtime'] = $vod['vod_filmtime']; 
-		}
-		if(isset($vod['vod_length'])){ 
-			$edit['vod_length'] = $vod['vod_length']; 
-		}		
-		if(isset($vod['vod_state'])){ 
-			$edit['vod_state'] = $vod['vod_state']; 
-		}
-		if(isset($vod['vod_version'])){ 
-			$edit['vod_version'] = $vod['vod_version']; 
-		}
-		if(isset($vod['vod_tv'])){ 
-			$edit['vod_tv'] = $vod['vod_tv']; 
+		// 排除豆瓣ID
+		if(!$vod_old['vod_douban_id']){	
+			if(isset($vod['vod_name'])){
+				$edit['vod_name'] = $vod['vod_name'];
+			}
+			if(isset($vod['vod_reurl'])){
+				$edit['vod_reurl'] = $vod['vod_reurl'];
+			}
+			if(isset($vod['vod_inputer'])){
+				$edit['vod_inputer'] = $vod['vod_inputer'];
+			}
+			if(isset($vod['vod_total'])){
+				$edit['vod_total'] = $vod['vod_total'];	
+			}
+			if(isset($vod['vod_filmtime'])){
+				$edit['vod_filmtime'] = $vod['vod_filmtime']; 
+			}
+			if(isset($vod['vod_length'])){ 
+				$edit['vod_length'] = $vod['vod_length']; 
+			}
+			if(isset($vod['vod_state'])){ 
+				$edit['vod_state'] = $vod['vod_state']; 
+			}
+			if(isset($vod['vod_version'])){ 
+				$edit['vod_version'] = $vod['vod_version']; 
+			}
+			if(isset($vod['vod_tv'])){ 
+				$edit['vod_tv'] = $vod['vod_tv']; 
+			}		
 		}
 		// 更新数据
 		M('Vod')->data($edit)->save();
@@ -327,8 +310,33 @@ class CjModel extends Model {
 		}
 		return array('vod_play'=>implode('$$$',$play),'vod_url'=>implode('$$$',$url));
 	}
+	//json资源库采集
+	private function vod_json($admin, $params){
+		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
+		$html = ff_file_get_contents($url);
+		//是否采集到数据
+		if(!$html){
+			return array('status'=>601, 'infos'=>'连接API资源库失败，通常为服务器网络不稳定或禁用了采集。');
+		}
+		//数据包验证
+		$json = json_decode($html, true);
+		if( is_null($json) ){
+			return array('status'=>602, 'type'=>'json', 'infos'=>'JSON格式不正确，不支持采集。');
+		}
+		//资源库返回的状态501 502 503 3.3版本前没有status字段
+		if($json['status'] && $json['status'] != 200){
+			return array('status'=>$json['status'], 'type'=>'json', 'infos'=>$json['data']);
+		}
+		//不是feifeicms的格式
+		if(!$json['list']){
+			return array('status'=>602, 'type'=>'json', 'infos'=>'不是FeiFeiCms系统的接口，不支持API采集，请改用火车头或其它工具。');
+		}
+		//返回正确的数据集合
+		$json = $this->vod_bind($admin, $json);
+		return array('status'=>200, 'type'=>'json', 'infos'=>$json);
+	}
 	//xml资源库采集
-	private function vod_xml_caiji($admin, $params){
+	private function vod_xml($admin, $params){
 		$url = array();
 		if($admin['action']=='show' && $params['wd']){ 
 			$url['ac'] = 'list'; 
@@ -406,7 +414,8 @@ class CjModel extends Model {
 				$key++;
 			}
 		}
-		return array('status'=>200,'type'=>'xml', 'infos'=>array('page'=>$array_page,'list'=>$array_list,'data'=>$array_vod));
+		$json = $this->vod_bind($admin, array('status'=>200,'page'=>$array_page,'list'=>$array_list,'data'=>$array_vod));
+		return array('status'=>200,'type'=>'xml', 'infos'=>$json);
 	}
 	//xml资源库播放地址格式化
 	private function vod_xml_replace($playurl){
@@ -422,12 +431,31 @@ class CjModel extends Model {
 		}
 		return implode(chr(13),$array_url);	
 	}
+	//资源库绑定相关
+	private function vod_bind($admin, $json){
+		// 读取绑定配置
+		$bind = F('_cj/bind');
+		// 获取到的远程栏目数据增加对应的绑定ID
+		foreach($json['list'] as $key=>$value){
+			$json['list'][$key]['bind_key'] = $admin['cjid'].'_'.$value['list_id'];
+		}
+		// 获取到的远程视频列表数据格式化处理
+		foreach($json['data'] as $key=>$value){
+			$json['data'][$key]['vod_cid'] = intval($bind[$admin['cjid'].'_'.$value['vod_cid']]);
+			$json['data'][$key]['vod_inputer'] = 'xml_'.$admin['cjid'];
+			if(!$json['data'][$key]['vod_reurl']){
+				$json['data'][$key]['vod_reurl'] = base64_decode($admin['xmlurl']).$json['data'][$key]['vod_id'];
+			}
+		}
+		return $json;
+	}
 	/*----------------------------------------------------------user---------------------------------------------------------------------------*/	
 	public function user_json($admin, $params){
 		$params['g'] = 'plus';
 		$params['m'] = 'api';
 		$params['a'] = 'user';
 		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
 		ksort($params);
 		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
 		$html = ff_file_get_contents($url);
@@ -499,6 +527,7 @@ class CjModel extends Model {
 		$params['m'] = 'api';
 		$params['a'] = 'forum';
 		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
 		ksort($params);
 		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
 		$html = ff_file_get_contents($url);
@@ -586,6 +615,7 @@ class CjModel extends Model {
 		$params['m'] = 'api';
 		$params['a'] = 'scenario';
 		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
 		ksort($params);
 		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
 		$html = ff_file_get_contents($url);
@@ -668,6 +698,7 @@ class CjModel extends Model {
 		$params['m'] = 'api';
 		$params['a'] = 'news';
 		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
 		ksort($params);
 		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
 		$html = ff_file_get_contents($url);
@@ -682,10 +713,26 @@ class CjModel extends Model {
 		}
 		//资源库返回的状态501 502 503
 		if($json['status'] != 200){
-			return array('status'=>$json['status'], 'infos'=>$json['data']);
+			return array('status'=>$json['status'], 'infos'=>$json['data'].$json['message']);
 		}
 		//返回正确的数据集合
+		$json = $this->news_bind($admin, $json);
 		return array('status'=>200, 'infos'=>$json);
+	}
+	private function news_bind($admin, $json){
+		// 获取到的远程栏目数据增加对应的绑定ID
+		foreach($json['list'] as $key=>$value){
+			$json['list'][$key]['bind_key'] = $admin['cjid'].'_'.$value['list_id'];
+		}
+		// 获取到的远程视频列表数据格式化处理
+		foreach($json['data'] as $key=>$value){
+			$json['data'][$key]['news_cid'] = intval(ff_bind_id($admin['cjid'].'_'.$value['news_cid']));
+			$json['data'][$key]['news_inputer'] = 'xml_'.$admin['cjid'];
+			if(!$json['data'][$key]['news_reurl']){
+				$json['data'][$key]['news_reurl'] = base64_decode($admin['xmlurl']).$json['data'][$key]['news_id'];
+			}
+		}
+		return $json;
 	}
 	public function news_update($admin, $params, $json){
 		echo'<style type="text/css">
@@ -701,7 +748,6 @@ class CjModel extends Model {
 			</h5>';
 		foreach($json['data'] as $key=>$news){
 			echo '<li>第<span>'.(($admin['page']-1)*$json['page']['pagesize']+$key+1).'</span>个文章《'.$news['news_name'].'》</li>';
-			$news['news_inputer'] = 'xml_'.$admin['cjid'];
 			$this->news_db($news);
 			ob_flush();flush();
 		}
@@ -735,7 +781,8 @@ class CjModel extends Model {
 			return $this->news_db_update($news, $array);
 		}
 		// 添加文章开始
-		unset($news['news_id']);		
+		unset($news['news_id']);	
+		$news['news_addtime'] = time();	
 		if( empty($news['news_hits']) ){
 			$news['news_hits'] = mt_rand(1,C('collect_hits'));
 		}
@@ -753,11 +800,6 @@ class CjModel extends Model {
 		}
 		if( empty($news['news_ename']) ){
 			$news['news_ename'] = ff_pinyin($news['news_name']);
-		}
-		if( empty($news['news_addtime']) ){
-			$news['news_addtime'] = time();
-		}else{
-			$news['news_addtime'] = strtotime($news['news_addtime']);
 		}
 		// 自动下载远程海报图片
 		$img = D('Img');
@@ -807,5 +849,331 @@ class CjModel extends Model {
 		echo '<li class="p">文章已更新。</li>';
 		return true;
 	}	
+	
+	/*----------------------------------------------------------star---------------------------------------------------------------------------*/	
+	public function star_json($admin, $params){
+		$params['g'] = 'plus';
+		$params['m'] = 'api';
+		$params['a'] = 'star';
+		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
+		ksort($params);
+		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
+		$html = ff_file_get_contents($url);
+		//是否采集到数据
+		if(!$html){
+			return array('status'=>601, 'infos'=>'连接API资源库失败，通常为服务器网络不稳定或禁用了采集。');
+		}
+		//数据包验证
+		$json = json_decode($html, true);
+		if( is_null($json) ){
+			return array('status'=>602, 'infos'=>'JSON格式不正确，不支持采集。');
+		}
+		//资源库返回的状态501 502 503
+		if($json['status'] != 200){
+			return array('status'=>$json['status'], 'infos'=>$json['data'].$json['message']);
+		}
+		//返回正确的数据集合
+		$json = $this->person_bind($admin, $json);
+		return array('status'=>200, 'infos'=>$json);
+	}
+	private function person_bind($admin, $json){
+		// 读取绑定配置
+		$bind = F('_cj/bind');
+		// 获取到的远程栏目数据增加对应的绑定ID
+		foreach($json['list'] as $key=>$value){
+			$json['list'][$key]['bind_key'] = $admin['cjid'].'_'.$value['list_id'];
+		}
+		// 获取到的远程视频列表数据格式化处理
+		foreach($json['data'] as $key=>$value){
+			$json['data'][$key]['person_cid'] = intval($bind[$admin['cjid'].'_'.$value['person_cid']]);
+			if(!$json['data'][$key]['person_reurl']){
+				$json['data'][$key]['person_reurl'] = base64_decode($admin['xmlurl']).$json['data'][$key]['person_id'];
+			}
+		}
+		return $json;
+	}	
+	public function star_update($admin, $params, $json){
+		echo'<style type="text/css">
+			ul{margin:0 auto; width:60%;border:1px solid #666;}
+			h5{text-align:center;}
+			li{font-size:12px;color:#333;line-height:21px}
+			li.p{color:#666;list-style:none;}
+			li.red{color:#FF0000}
+			li.blue{color:blue}
+			span{font-weight:bold;color:#FF0000}
+			</style><ul>
+			<h5>人物采集 共有<span>'.$json['page']['recordcount'].'</span>个数据，需要采集<span>'.$json['page']['pagecount'].'</span>次，正在执行第<span color=green>'.$admin['page'].'</span>次采集任务，每一次采集<span>'.$json['page']['pagesize'].'</span>个。
+			</h5>';
+		foreach($json['data'] as $key=>$star){
+			echo '<li>第<span>'.(($admin['page']-1)*$json['page']['pagesize']+$key+1).'</span>个《'.$star['person_name'].'》</li>';
+			$this->star_db($star);
+			ob_flush();flush();
+		}
+		//是否分页采集
+		$admin['g'] = 'admin';
+		$admin['m'] = 'cj';
+		$admin['a'] = 'apis';
+		$admin['page'] = 'FFLINK';
+		$page_link = '?'.http_build_query(array_merge($admin, $params));
+		$this->jump($json['page']["pageindex"], $json['page']['pagecount'], $page_link);
+		echo'</ul>';
+	}	
+	public function star_db($star){
+		unset($star['person_id']);
+	  if( empty($star['person_name']) ){
+			echo '<li class="p">名称为空，不做处理!</li>';
+			return false;
+		}
+		if(!$star['person_cid']){
+			echo '<li class="p">请先转换分类，不做处理!</li>';
+			return false;
+		}
+		//来源标识验证
+		if(!$star['person_reurl']){
+			echo '<li class="p">来源标识为空，不做处理!</li>';
+			return false;
+		}
+		//重复采集验证
+		$star_old = $this->star_db_find($star);
+		if($star_old['person_id']){
+			$status = '<li class="p"><strong>取消：</strong>明星已存在，不做处理!</li>';
+		}else{
+			$status = '<li class="p"><strong>新增：</strong>'.$this->star_db_insert($star).'</li>';
+		}
+		echo $status;
+  }
+	private function star_db_find($star){
+		$field = 'person_id,person_cid,person_name,person_alias,person_birthday,person_reurl,person_douban_celebrities';
+		$where = array();
+		$where['person_cid'] = array('eq', $star['person_cid']);
+		$where['person_sid'] = array('eq', 8);
+		$where['person_name'] = array('like', $star['person_name'].'%');
+		$array_list = M('Person')->field($field)->where($where)->limit(30)->order('person_id desc')->select();
+		if(!$array_list){
+			return $star;
+		}
+		// 来源判断
+		foreach($array_list as $key=>$value){
+			if($value['person_reurl'] == $star['person_reurl']){
+				return $value;
+			}
+		}
+		// 豆瓣检测
+		foreach($array_list as $key=>$value){
+			if($value['person_douban_celebrities'] == $star['person_douban_celebrities']){
+				return $value;
+			}
+		}
+		// 标题检测
+		foreach($array_list as $key=>$value){
+			if($value['person_name'] == $star['person_name']){
+				if($star['person_alias'] && ($value['person_alias'] == $star['person_alias'])){
+					return $value;
+				}
+				if($star['person_birthday'] && ($value['person_birthday'] == $star['person_birthday'])){
+					return $value;
+				}
+				$star['person_status'] = -1;//需审核
+			}
+		}
+		return $star;
+	}
+	private function star_db_insert($star){
+		$star['person_addtime'] = time();
+		$star['person_letter'] 	= ff_url_letter($star['person_name']);
+		if(empty($star['person_ename'])){
+			$star['person_ename'] = ff_pinyin($star['person_name']);
+		}
+		if(empty($star['person_intro'])){
+			$star['person_intro'] = msubstr(trim($star['person_content']),0,100,false);
+		}		
+		if(empty($star['person_hits'])){
+			$star['person_hits'] = mt_rand(0, C('collect_hits'));
+		}
+		if(empty($star['person_up'])){
+			$star['person_up'] = mt_rand(0, C('collect_updown'));
+		}
+		if(empty($star['person_down'])){
+			$star['person_down'] = mt_rand(0, C('collect_updown'));
+		}
+		if( empty($star['person_gold']) ){
+			$star['person_gold'] = mt_rand(0, C('collect_gold'));
+		}
+		if( empty($star['person_golder']) ){
+			$star['person_golder'] = mt_rand(0, C('collect_golder'));
+		}
+		$id = M('Person')->data($star)->add();
+		if($id){
+			return '添加成功('.$id.')';
+		}
+		return '添加失败：'.M('Person')->getDbError();
+	}
+	
+	/*----------------------------------------------------------role---------------------------------------------------------------------------*/	
+	public function role_json($admin, $params){
+		$params['g'] = 'plus';
+		$params['m'] = 'api';
+		$params['a'] = 'role';
+		$params['p'] = $admin['page'];
+		$params['key'] = $admin['apikey'];
+		ksort($params);
+		$url = base64_decode($admin['xmlurl']).'?'.http_build_query($params);
+		$html = ff_file_get_contents($url);
+		//是否采集到数据
+		if(!$html){
+			return array('status'=>601, 'infos'=>'连接API资源库失败，通常为服务器网络不稳定或禁用了采集。');
+		}
+		//数据包验证
+		$json = json_decode($html, true);
+		if( is_null($json) ){
+			return array('status'=>602, 'infos'=>'JSON格式不正确，不支持采集。');
+		}
+		//资源库返回的状态501 502 503
+		if($json['status'] != 200){
+			return array('status'=>$json['status'], 'infos'=>$json['data'].$json['message']);
+		}
+		//返回正确的数据集合
+		$json = $this->person_bind($admin, $json);
+		return array('status'=>200, 'infos'=>$json);
+	}
+	public function role_update($admin, $params, $json){
+		echo'<style type="text/css">
+			ul{margin:0 auto; width:60%;border:1px solid #666;}
+			h5{text-align:center;}
+			li{font-size:12px;color:#333;line-height:21px}
+			li.p{color:#666;list-style:none;}
+			li.red{color:#FF0000}
+			li.blue{color:blue}
+			span{font-weight:bold;color:#FF0000}
+			</style><ul>
+			<h5>人物采集 共有<span>'.$json['page']['recordcount'].'</span>个数据，需要采集<span>'.$json['page']['pagecount'].'</span>次，正在执行第<span color=green>'.$admin['page'].'</span>次采集任务，每一次采集<span>'.$json['page']['pagesize'].'</span>个。
+			</h5>';
+		foreach($json['data'] as $key=>$role){
+			echo '<li>第<span>'.(($admin['page']-1)*$json['page']['pagesize']+$key+1).'</span>个《'.$role['person_name'].'》</li>';
+			$this->role_db($role);
+			ob_flush();flush();
+		}
+		//是否分页采集
+		$admin['g'] = 'admin';
+		$admin['m'] = 'cj';
+		$admin['a'] = 'apis';
+		$admin['page'] = 'FFLINK';
+		$page_link = '?'.http_build_query(array_merge($admin, $params));
+		$this->jump($json['page']["pageindex"], $json['page']['pagecount'], $page_link);
+		echo'</ul>';
+	}	
+	public function role_db($role){
+		unset($role['person_id']);
+	  if( empty($role['person_name']) ){
+			echo '<li class="p">名称为空，不做处理!</li>';
+			return false;
+		}
+		if(!$role['person_cid']){
+			echo '<li class="p">请先转换分类，不做处理!</li>';
+			return false;
+		}
+		//来源标识验证
+		if(!$role['person_reurl']){
+			echo '<li class="p">来源标识为空，不做处理!</li>';
+			return false;
+		}
+		//重复采集验证
+		$role_old = $this->role_db_find($role);
+		if($role_old['person_id']){
+			$status = '<li class="p"><strong>取消：</strong>角色已存在，不做处理!</li>';
+		}else{
+			$status = '<li class="p"><strong>新增：</strong>'.$this->role_db_insert($role).'</li>';
+		}
+		echo $status;
+  }
+	private function role_db_find($role){
+		$field = 'person_id,person_name,person_reurl,person_father_name,person_douban_id,person_object_name';
+		$where = array();
+		$where['person_sid'] = array('eq', 9);
+		$where['person_name'] = array('like', $role['person_name'].'%');
+		$array_list = M('Person')->field($field)->where($where)->limit(30)->order('person_id desc')->select();
+		if(!$array_list){
+			return $role;
+		}
+		// 来源判断
+		foreach($array_list as $key=>$value){
+			if($value['person_reurl'] == $role['person_reurl']){
+				return $value;
+			}
+		}
+		// 豆瓣检测
+		foreach($array_list as $key=>$value){
+			if($value['person_douban_id'] == $role['person_douban_id']){
+				return $value;
+			}
+		}
+		// 主演检测
+		foreach($array_list as $key=>$value){
+			if($value['person_father_name'] == $role['person_father_name']){
+				return $value;
+			}
+		}
+		// 片名检测
+		foreach($array_list as $key=>$value){
+			if($value['person_object_name'] == $role['person_object_name']){
+				return $value;
+			}
+		}
+		// 标题检测
+		foreach($array_list as $key=>$value){
+			if($value['person_name'] == $role['person_name']){
+				$role['person_status'] = -1;//需审核
+			}
+		}
+		return $role;
+	}	
+	private function role_db_insert($role){
+		$role['person_addtime'] = time();
+		$role['person_letter'] 	= ff_url_letter($role['person_name']);
+		if(empty($role['person_ename'])){
+			$role['person_ename'] = ff_pinyin($role['person_name']);
+		}	
+		if(empty($role['person_hits'])){
+			$role['person_hits'] = mt_rand(0, C('collect_hits'));
+		}
+		if(empty($role['person_up'])){
+			$role['person_up'] = mt_rand(0, C('collect_updown'));
+		}
+		if(empty($role['person_down'])){
+			$role['person_down'] = mt_rand(0, C('collect_updown'));
+		}
+		if( empty($role['person_gold']) ){
+			$role['person_gold'] = mt_rand(0, C('collect_gold'));
+		}
+		if( empty($role['person_golder']) ){
+			$role['person_golder'] = mt_rand(0, C('collect_golder'));
+		}
+		//关联明星
+		if( $role['person_douban_celebrities'] ){
+			$father_id = M('Person')->where('person_sid=8 and person_douban_celebrities='.intval($role['person_douban_celebrities']))->getField('person_id');
+		}
+		if((!$father_id) && $role['person_father_name']){
+			$father_id = M('Person')->where('person_sid=8 and person_name="'.$role['person_father_name'].'"')->getField('person_id');
+		}
+		$role['person_father_id'] = intval($father_id);
+		//关联视频
+		if( $role['person_douban_id'] ){
+			$object_id = M('Vod')->where('vod_douban_id='.intval($role['person_douban_id']))->getField('vod_id');
+		}
+		if((!$object_id) && $role['person_object_name']){
+			$object_id = M('Vod')->where('vod_name="'.$role['person_object_name'].'"')->getField('vod_id');
+		}
+		$role['person_object_id'] = intval($object_id);
+		//状态修改
+		if($role['person_object_id']<1 || $role['person_father_id']<1){
+			$role['person_status'] = 0;
+		}
+		$id = M('Person')->data($role)->add();
+		if($id){
+			return '添加成功('.$id.')';
+		}
+		return '添加失败：'.M('Person')->getDbError();
+	}
 }
 ?>

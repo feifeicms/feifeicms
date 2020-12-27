@@ -2,10 +2,13 @@
 class ForumAction extends BaseAction{
 	// 用户评论管理
   public function show(){
+		//URL参数
 		$admin = array();
 		$admin['cid'] = $_GET['cid'];
 		$admin['sid'] = $_GET['sid'];
 		$admin['uid'] = $_GET['uid'];
+		$admin['wd'] = urldecode(trim($_REQUEST['wd']));
+		$admin['status'] = $_GET['status'];
 		$admin['istheme'] = $_GET['istheme'];
 		if(isset($admin['istheme'])){
 			if($admin['istheme'] == 1){
@@ -16,40 +19,61 @@ class ForumAction extends BaseAction{
 		}else{
 			$admin['pid'] = $_GET['pid'];
 		}
-		$admin['status'] = $_GET['status'];
-		$admin['wd'] = urldecode(trim($_REQUEST['wd']));
-		$admin['limit'] = 20;
+		//排序参数
+		$admin['order'] = !empty($_GET['order'])?$_GET['order']:C('admin_order_type');
+		$admin['sort'] = !empty($_GET['sort'])?$_GET['sort']:'desc';
+		//跳转参数
+		$urls = $admin;
+		$urls['g'] = 'admin';
+		$urls['m'] = 'forum';
+		$urls['a'] = 'show';
+		$this->assign('urls',$urls);
+		//基本参数
+		$admin['field'] = '*';
+		$admin['limit'] = 30;
+		//分页参数
 		$admin['page_is'] = true;
 		$admin['page_id'] = 'forum';
 		$admin['page_p'] = !empty($_GET['p'])?intval($_GET['p']):1;
-		$admin['cache_time'] = 0;
-		$admin['order'] = !empty($_GET['order'])?$_GET['order']:'forum_id';
-		$admin['sort'] = !empty($_GET['sort'])?$_GET['sort']:'desc';
-		$list = ff_mysql_forum($admin);
-		//
+		//缓存参数
+		$admin['cache_name'] = false;
+		$admin['cache_time'] = false;
+		//数据查询
+		$list = ff_mysql_forum(array_merge($admin,array('order'=>'forum_'.$admin['order'])));
+		// 拼装翻页参数
 		$page = $_GET['ff_page_forum'];
-		$params = array('cid'=>$admin['cid'], 'sid'=>$admin['sid'], 'uid'=>$admin['uid'], 'pid'=>$admin['pid'], 'istheme'=>$admin['istheme'], 'status'=>$admin['status'], 'wd'=>urlencode($admin['wd']), 'order'=>$admin['order'], 'sort'=>$admin['sort'], 'p'=>'FFLINK');
-		$pageurl = U('Forum/Show', $params, false, true);
-		$admin['pages'] = '共'.$page['records'].'篇评论&nbsp;当前:'.$page['currentpage'].'/'.$page['totalpages'].'页&nbsp;'.getpage($page['currentpage'],$page['totalpages'],8,$pageurl,'pagego(\''.$pageurl.'\','.$page['totalpages'].')');
-		$admin['list'] = $list;
-		$this->assign($admin);
+		$page['jump'] = './index.php?'.http_build_query(array_merge($urls,array('p'=>'FFLINK')));
+		$page['pages'] = '共'.$page['records'].'个评论&nbsp;当前:'.$page['currentpage'].'/'.$page['totalpages'].'页&nbsp;'.getpage($page['currentpage'],$page['totalpages'],8,$page['jump'],'pagego(\''.$page['jump'].'\','.$page['totalpages'].')');
+		//变量附值
+		$this->assign($urls);
+		$this->assign($page);
+		$this->assign('list',$list);
 		//回跳URL
-		$params['p'] = $admin['page_p'];
-		$_SESSION['forum_jumpurl'] = U('Admin-Forum/Show', $params);
+		session_start();
+		$_SESSION['jumpurl'] = './index.php?'.http_build_query(array_merge($urls,array('p'=>$admin['page_p'])));
+		//加载模板
     $this->display('./Public/system/forum_show.html');
   }
 	// 编辑界面
   public function add(){
 		$array =  D('Forum')->ff_find('*', array('forum_id'=>array('eq',$_GET['id'])),false,false);
-		$this->assign($array);	
+		$array['isrepost'] = intval($_GET['isrepost']);//是否回复评论
+		$this->assign($array);
     $this->display('./Public/system/forum_add.html');
   }
 	// 更新
 	public function update(){
 		$data = $_REQUEST;
-		$info = D("Forum")->ff_update($$data);
+		//管理员回复评论删除自动验证规则
+		if($data['forum_pid']){
+			D("Forum") -> setProperty("_validate", array(
+				array('forum_content','require','请填写回复内容！',1)
+			));
+		}
+		//自动验证
+		$info = D("Forum")->ff_update($data);
 		if($info){
-			$this->assign("jumpUrl",$_SESSION['forum_jumpurl']);
+			$this->assign("jumpUrl",$_SESSION['jumpurl']);
 			$this->success('更新评论信息成功！');
 		}else{
 			$this->error(D("Forum")->getError());

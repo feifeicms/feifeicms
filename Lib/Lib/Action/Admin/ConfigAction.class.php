@@ -12,7 +12,9 @@ class ConfigAction extends BaseAction{
 		$tpl = TMPL_PATH.'*';
 		$list = glob($tpl);
 		foreach ($list as $i=>$file){
-			$dir[$i]['filename'] = basename($file);
+			if( !in_array(basename($file) , array('base','base_m')) ){
+				$dir[$i]['filename'] = basename($file);
+			}
 		}
 		$this->assign('dir',$dir);
 		$this->assign($this->config);
@@ -31,10 +33,11 @@ class ConfigAction extends BaseAction{
 			$config['site_tongji'] = stripslashes($config['site_tongji']);
 			//子域名配置规则
 			if($config['site_domain_m']){
+				//子域名规则
 				$domain = substr($config['site_domain_m'],0,strpos($config['site_domain_m'], '.'));
 				$config['app_sub_domain_deploy'] = 1;
 				$config['app_sub_domain_rules'] = array(
-					$domain  => array('Home/','theme='.C('default_theme').'_m'),
+					$domain  => array('Home/','theme='.$config['default_theme_m']),
 				);
 			}else{
 				$config['app_sub_domain_deploy'] = 0;
@@ -46,6 +49,8 @@ class ConfigAction extends BaseAction{
 			}else{
 				$config['html_home_suffix'] = $config['html_file_suffix'];//将静态后缀写入配置供前台生成的路径的时候调用
 			}
+			//搜索联想开关
+			$config['ui_search_limit'] = intval($config['ui_search_limit']);
 		}elseif($type == 'model'){
 			$config['play_second'] = intval($config['play_second']);
 			foreach(explode(chr(13),trim($config["play_server"])) as $v){
@@ -56,7 +61,7 @@ class ConfigAction extends BaseAction{
 		}elseif($type == 'rewrite'){
 			//路由规则定义及路由规则反向URL
 			if($config['rewrite_route']){
-				$routes_urls = ff_url_create($config['rewrite_route']);
+				$routes_urls = ff_url_create(trim($config['rewrite_route']));
 				$config['url_rewrite_rules'] = $routes_urls['rewrite_rules'];
 				$config['url_route_rules'] = $routes_urls['route_rules'];
 			}else{
@@ -118,6 +123,18 @@ class ConfigAction extends BaseAction{
 			
 		}elseif($type == 'pay'){
 			
+		}elseif($type == 'weixin'){
+			
+		}elseif($type == 'wxkey'){
+			foreach($config['wx_item']['keyword'] as $key=>$value){
+				if(!$value){
+					unset($config['wx_item']['keyword'][$key]);
+					unset($config['wx_item']['title'][$key]);
+					unset($config['wx_item']['content'][$key]);
+					unset($config['wx_item']['pic'][$key]);
+					unset($config['wx_item']['link'][$key]);
+				}
+			}
 		}
 		$config_new = array_merge($this->config, $config);
 		arr2file('./Runtime/Conf/config.php',$config_new);

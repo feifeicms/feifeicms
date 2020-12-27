@@ -6,12 +6,8 @@
 .modal-scrollbar-measure {
 	display:none
 }
-.page-header {
-	margin:0 0 10px 0;
-	padding:0;
-}
 .breadcrumb, .table {
-	font-size:1.2em;
+	font-size:1.1em;
 }
 .pagination > li > a,
 .pagination > li > span {
@@ -54,19 +50,19 @@ a:hover{
 .ff-col-0{
 	padding:0px;
 }
-.ff-clearfix{
+.mb-2{
 	margin-bottom:15px;
 }
-.ff-text-right a{
+.text-mr-1 a{
 	margin-right:5px;
 }
-.ff-text{
+.text-green{
 	color:#090;
 }
-a.ff-text{
+a.text-green{
 	color:#090;
 }
-a.ff-text:hover{
+a.text-green:hover{
 	color:#333;
 }
 .ff-footer{
@@ -93,6 +89,10 @@ a.ff-text:hover{
 	width: 40px;
 	height: 40px;
 	line-height: 40px;
+}
+/*user-index*/
+.user-index{
+	padding-top:0;
 }
 /*register*/
 .user-register{
@@ -139,23 +139,22 @@ a.ff-text:hover{
 }
 /*user-center*/
 .user-center{
-	padding-top:50px;
+	padding-top:30px;
 }
 .user-center .navbar-header{
 	margin-left:-10px;	
 }
-.user-center h4.user-name{
-	padding:5px 0;
-}
-.user-center h6.user-link{
-	padding:0 0 10px 0;
-}
-.user-center .navbar-user{
-	margin:0 0 15px 0;
-}
 .user-center .face{
 	width:100px;
 	height:100px;
+	margin-top:10px;
+}
+.user-center .user-name{
+	padding:5px 0;
+}
+.user-center .user-link{
+	margin:0;
+	padding:0;
 }
 .user-center .safe dt{
 	font-size:1.1em;
@@ -166,8 +165,8 @@ a.ff-text:hover{
 	padding-bottom:15px;
 }
 .user-center table .forum-detail{
-	font-size:14px;
-	list-style:2.0em;
+	font-size:1.1em;
+	min-height:90px;
 }
 .user-center .vod-record{
 	margin-left:-10px;
@@ -176,6 +175,7 @@ a.ff-text:hover{
 	padding:0 0 0 10px;
 	height:150px;
 	overflow:hidden;
+	margin-bottom:10px;
 }
 .user-center .vod-record a.picbg{
 	width:100%; 
@@ -185,10 +185,6 @@ a.ff-text:hover{
 	border-radius: 4px;
 	opacity: 0.9;
 }
-.user-index{
-	padding-top:0;
-}
-
 @media (max-width:767px) {
 .navbar-default .navbar-nav{
 	margin-top:5px;

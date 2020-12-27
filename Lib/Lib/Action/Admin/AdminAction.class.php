@@ -15,23 +15,9 @@ class AdminAction extends BaseAction{
 		$where['admin_id'] = $_GET['id'];
 		$rs = D("Admin");
 		$array = $rs->where($where)->find();
-		$type = explode(',',$array['admin_ok']);
-		$this->assign('admin',$type);
 		$this->assign($array);
     $this->display('./Public/system/admin_add.html');
   }	
-	//处理权限入库
-	public function _before_insert(){
-		$ok = $_POST['ids'];
-		for($i=0;$i<20;$i++){
-			if($ok[$i]){
-				$rs[$i]=$ok[$i];
-			}else{
-				$rs[$i]=0;
-			}
-		}
-		$_POST['admin_ok'] = implode(',',$rs);
-	}
 	// 写入数据
 	public function insert(){
 		$rs = D("Admin");
@@ -48,7 +34,6 @@ class AdminAction extends BaseAction{
 	}
 	// 更新数据
 	public function update(){
-	    $this->_before_insert();
 		$rs = D("Admin");
 		if ($rs->create()) {
 			if(false !==  $rs->save()){

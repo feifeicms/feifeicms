@@ -21,23 +21,25 @@
       <li <eq name="user_action" value="wish">class="active"</eq>><a href="{:ff_url('user/center',array('action'=>'wish'))}">想看</a></li>
       <li <eq name="user_action" value="do">class="active"</eq>><a href="{:ff_url('user/center',array('action'=>'do'))}">在看</a></li>
       <li <eq name="user_action" value="collect">class="active"</eq>><a href="{:ff_url('user/center',array('action'=>'collect'))}">看过</a></li>
-      <li><a class="ff-text" href="{:ff_url('user/logout')}">退出</a></li>
+      <li><a class="text-green" href="{:ff_url('user/logout')}">退出</a></li>
   </div>
 </div>
 </nav>
-<div class="container ff-bg">
-<h2 class="text-center">
-  <a href="{:ff_url('user/center')}">
-    <img class="img-circle face" src="{$user_face|ff_url_img|default=$root.'Public/images/face/default.png'} " align="用户中心">
-  </a>
-</h2>
-<h4 class="text-center user-name">
-  {$user_name|htmlspecialchars}
-</h4>
-<h6 class="text-center user-link">
-  <a href="{:ff_url('user/index',array('id'=>$user_id))}" class="ff-text">
-    {$site_url}{:ff_url('user/index',array('id'=>$user_id))}
-  </a>
-</h6>
-</div>
-<div class="clearfix"></div>
+<eq name="user_action" value="index">
+  <div class="container ff-bg">
+    <h2 class="text-center">
+      <a href="{:ff_url('user/center')}">
+        <img class="img-circle face" src="{$user_face|ff_url_img|default=$root.'Public/images/face/default.png'} " align="用户中心">
+      </a>
+    </h2>
+    <h4 class="text-center user-name">
+      {$user_name|htmlspecialchars|nb}
+    </h4>
+    <h6 class="text-center user-link">
+      <a href="{:ff_url('user/index',array('id'=>$user_id))}" class="text-green">
+        {$site_url}{:ff_url('user/index',array('id'=>$user_id))}
+      </a>
+    </h6>
+  </div>
+  <div class="clearfix"></div>
+</eq>

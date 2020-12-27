@@ -67,6 +67,6 @@ h2{
 </p>
 <?php }?>
 </div>
-<div align="center" style="color:#FF3300;margin:5pt;font-family:Verdana"><a href="http://www.feifeicms.com" target="_blank">飞飞影视导航系统 www.feifeicms.com</a></div>
+<div align="center" style="color:#FF3300;margin:5pt;font-family:Verdana"><a href="http://www.feifeicms.org" target="_blank">飞飞影视导航系统 www.feifeicms.org</a></div>
 </body>
 </html>

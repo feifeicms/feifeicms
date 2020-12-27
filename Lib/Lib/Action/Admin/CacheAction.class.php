@@ -71,7 +71,7 @@ class CacheAction extends BaseAction{
 	//清空所有数据缓存
   public function dataclear(){
 		if(C('data_cache_type') == 'memcache'){
-			$cache = Cache::getInstance();	
+			$cache = Cache::getInstance();
 			$cache->clear();
 		}else{
 			import("ORG.Io.Dir");
@@ -97,7 +97,7 @@ class CacheAction extends BaseAction{
 		$rs = M("Vod");
 		$array = $rs->field('vod_id')->where($where)->order('vod_id desc')->select();
 		foreach($array as $key=>$val){
-			S(md5('cache_page_vod_'.$val['vod_id']),NULL);
+			S(md5(C('cache_foreach_prefix').'cache_page_vod_'.$val['vod_id']),NULL);
 		}						
 		echo('清除成功');
 	}	
@@ -108,7 +108,7 @@ class CacheAction extends BaseAction{
 		$rs = M("News");
 		$array = $rs->field('news_id')->where($where)->order('news_id desc')->select();
 		foreach($array as $key=>$val){
-			S(md5('cache_page_news_'.$val['news_id']),NULL);
+			S(md5(C('cache_foreach_prefix').'cache_page_news_'.$val['news_id']),NULL);
 		}						
 		echo('清除成功');
 	}
@@ -119,7 +119,7 @@ class CacheAction extends BaseAction{
 		$rs = M("Special");
 		$array = $rs->field('special_id')->where($where)->order('special_id desc')->select();
 		foreach($array as $key=>$val){
-			S(md5('cache_page_special_'.$val['special_id']),NULL);
+			S(md5(C('cache_foreach_prefix').'cache_page_special_'.$val['special_id']),NULL);
 		}						
 		echo('清除成功');
 	}			

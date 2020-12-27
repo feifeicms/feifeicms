@@ -58,7 +58,7 @@ button,.button,.submit{
 	margin:0 auto;
 }
 .navpoint {
-	cursor: hand;
+	cursor: pointer;
 }
 .center{
 	text-align:center
@@ -121,14 +121,17 @@ button,.button,.submit{
 .r-t {
 	text-align:right;
 }
+.ml-5{
+	margin-left:5px;
+}
+.mr-5{
+	margin-right:5px;
+}
 .margin-5000{
 	margin-top:5px;
 }
 .padding-5050{
 	padding:5px 0px;
-}
-.ti_5{
-	text-indent:5px
 }
 /*---------------------分页样式--------------------------*/
 .pages {
@@ -243,7 +246,7 @@ button,.button,.submit{
 }
 .table thead th {
 	font-weight:normal;
-	padding-left:10px;
+	padding:1px 5px;
 	border-top: 1px solid #cad9ea;
 	font-size:13px;
 }
@@ -286,12 +289,6 @@ button,.button,.submit{
 	height:21px;
 }
 /*表头tabs 结束*/
-.table tfoot {
-	background:#FFFFFF;
-}
-.table tfoot td {
-	padding:5px 0px 5px 15px;
-}
 .table td {
 	padding:8px 0;
 }
@@ -322,7 +319,7 @@ button,.button,.submit{
 .table .tr, .table .r {
 	border-bottom:1px solid #cad9ea;
 }
-.table .pd {
+.table .pd,.table td input {
 	padding-left:5px;
 }
 .table td.son{
@@ -331,6 +328,40 @@ button,.button,.submit{
 .table td.son input{
 	color:#666;
 }
+/*列表页筛选条件*/
+.table.select a{ font-size:14px; margin-right:5px;}
+.table.select a.list-son{ display:none; line-height:30px; color:#666}
+.table.select a.active{color:#F00; font-weight:400;}
+.table.select .wd{ color:#666}
+.table.select .all{color: #00F; letter-spacing:2px; font-weight:bold}
+.table label.vod_ids{ margin:0px 5px;}
+.table label.vod_play {float:right; color:#666; margin-right:5px; font-size:12px;}
+.table label sup {color:#990000;cursor:pointer;font-size:13px; margin-left:5px;}
+/*上下简头排序*/
+.table img.sort{
+	cursor:pointer;
+	width:12px;
+	height:12px;
+}
+.table img.sort.active{
+	width:16px;
+	height:16px;
+}
+.table .create0{
+	color:#999;
+	text-decoration: none;
+}
+.table .create1{
+	color:#33F;
+}
+/*表格底部*/
+.table tfoot {
+	background:#FFFFFF;
+}
+.table tfoot td {
+	padding:5px 0px 5px 15px;
+}
+/*单元格背景*/
 .bgEven {
 	background: #FFFFFF;
 }
@@ -339,6 +370,10 @@ button,.button,.submit{
 }
 .bgOver {
 	background-color:#FCF9F9;
+}
+/*星级推荐取消*/
+.star_no_0{
+	display:none;
 }
 /*表单提交框相关*/
 .title {
@@ -504,6 +539,9 @@ button,.button,.submit{
 .add ul .right .w500,.w500{
 	width:500px;
 }
+.add ul .right .w660,.w660{
+	width:655px;
+}
 .add ul .right .h80{
 	height:80px;
 }
@@ -522,25 +560,31 @@ button,.button,.submit{
 	text-align:center;
 }
 .add .footer input {
-	width:auto;
-	color:#333;
-	background:url(../images/admin/button_bg.gif);
-	height:32px;
+	height:28px;
+	line-height:24px;
 	border:1px solid #c6d2e3;
-	letter-spacing:10px;
+	background:url("../images/admin/button_bg.gif");
+	font-size:13px;
 	cursor: pointer;
+	letter-spacing:3px;
 }
 .add a.select{
 	margin-right:5px;
-	color:#000;
+	color: #33C;
+	font-weight:600;
 }
 .add a:hover.select{
 	margin-right:5px;
-	color: #ff6600;
+	color: #666;
 }
 .add .tag-count{
 	margin-left:-5px;
 	margin-right:10px;
+}
+.add p.lead{
+	color:#666;
+	padding:0;
+	margin:5px 0 0 0;
 }
 /*cjlist*/
 .ff-cj .add p{
@@ -562,5 +606,31 @@ button,.button,.submit{
 .ff-cj .td-bind li{
 	display:block;
 	float:left;
-	width:25%;
+	width:20%;
+}
+/*自动完成插件 jquery.autocomplete*/
+.autocomplete-suggestions {
+	text-align:left;
+	border: 1px solid #999;
+	background: #FFF;
+	cursor: default;
+	overflow: auto;
+	-webkit-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+	-moz-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+	box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+}
+.autocomplete-suggestion {
+	padding:5px 0 5px 5px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.autocomplete-no-suggestion {
+	padding: 2px 5px;
+}
+.autocomplete-selected {
+	background: #F0F0F0;
+}
+.autocomplete-suggestions strong {
+	font-weight: bold;
+	color: #30F;
 }

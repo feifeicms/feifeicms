@@ -1,0 +1,10 @@
+/Runtime/~app.php
+/Runtime/~runtime.php
+/Runtime/Cache
+/Runtime/Logs
+/Runtime/Temp
+*.log
+*.temp
+.idea
+.env
+.lock

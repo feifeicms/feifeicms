@@ -4,52 +4,67 @@ class PicAction extends BaseAction{
 		$this->display('./Public/system/pic_tool.html');
 	}
 	// 本地附件展示
-  public function show(){
-		$id = trim($_GET['id']);
-		if ($id) {
-			$dirpath = admin_ff_url_repalce(str_replace('*','-',$id));
-		}else{
+    public function show(){
+        //当前目录
+        $dirpath = $this->file_id($_GET['id']);
+		if (!$dirpath) {
 			$dirpath = './'.C('upload_path');
 		}
-		if (!strpos($dirpath,C('upload_path'))) {
-			$this->error('不在上传文件夹范围内！');
-		}
+        //上级目录
 		$dirlast = $this->dirlast();
 		import("ORG.Io.Dir");
 		$dir = new Dir($dirpath);
 		$list_dir = $dir->toArray();
 		foreach($list_dir as $key=>$value){
-			$list_dir[$key]['pathfile'] = admin_ff_url_repalce($value['path'],'desc').'|'.str_replace('-','*',$value['filename']);
-		}	
+            $list_dir[$key]['pathfile'] = $value['path'].'/'.$value['filename'];
+		}
 		if (empty($list_dir)){
 			$this->error('还没有上传任何附件,无需管理！');
 		}	
 		if($dirlast && $dirlast != '.'){
-			$this->assign('dirlast',admin_ff_url_repalce($dirlast,'desc'));
+			$this->assign('dirlast', $dirlast);
 		}
 		$this->assign('dirpath',$dirpath);
 		$this->assign('list_dir',$list_dir);
 		$this->display('./Public/system/pic_show.html');
-  }
+    }
 	//获取上一层路径
-	public function dirlast(){
-		$id = admin_ff_url_repalce(trim($_GET['id']));
+	private function dirlast(){
+        $id = $this->file_id($_GET['id']);
 		if ($id) {
-			return substr($id,0,strrpos($id, '/'));
+			return substr($id, 0, strrpos($id, '/'));
 		}else{
 			return false;
 		}
-	}	
+	}
+    //文件目录过滤
+    private function file_id($file_name){
+        $file_name = urldecode(trim($file_name));
+        $file_name = str_replace('../', '', $file_name);
+        $file_name = str_replace('..', '', $file_name);
+        //目录锁定
+        $length = strlen(C('upload_path'))+3;
+        if(substr($file_name, 0, $length) != './'.C('upload_path').'/'){
+            return false;
+        }
+        return $file_name;
+    }
 	// 删除单个本地附件
-  public function del(){
-		$path = trim(str_replace('*','-',$_GET['id']));
+    public function del(){
+		$path = $this->file_id($_GET['id']);
+        if(!$path){
+            $this->error('不在上传文件夹范围内！');
+        }
 		@unlink($path);
 		@unlink(str_replace(C('upload_path').'/',C('upload_path').'-s/',$path));
 		$this->success('删除附件成功！');
-  }
-	// 清理无效图片
-	public function ajaxpic(){
-		$path = trim(str_replace('*','-',$_GET['id']));
+    }
+	// AJAX清理无效图片
+	public function clear(){
+		$path = $this->file_id($_GET['id']);
+        if(!$path){
+            exit('不在上传文件夹范围内！');
+        }
 		//根据参数组合生成当前目录下的图片数组
 		$list = glob($path.'/*');
 		if(empty($list)){
@@ -90,7 +105,7 @@ class PicAction extends BaseAction{
 			@unlink('./'.C('upload_path').'/'.$value);
 		};
 		exit('清理完成');
-  }
+    }
 	//裁剪小图
 	public function crop(){
 		if (!C('upload_thumb')) {
@@ -166,7 +181,7 @@ class PicAction extends BaseAction{
 		}
 	}
 	//下载远程图片
-  public function down(){
+    public function down(){
 		$sid = $_GET['sid'];
 		$cid = intval($_GET['cid']);
 		$img = D('Img');
@@ -242,6 +257,6 @@ class PicAction extends BaseAction{
 		}else{
 			echo '<h2 style="margin-top:100px; padding:0 auto; text-align:center">下载远程图片任务完成。</h2>';
 		}
-	}					
+	}				
 }
 ?>

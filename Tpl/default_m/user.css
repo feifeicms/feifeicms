@@ -93,19 +93,19 @@ a:hover{
 .ff-col-0{
 	padding:0px;
 }
-.ff-clearfix{
+.mb-1{
 	margin-bottom:15px;
 }
-.ff-text-right a{
+.text-mr-1 a{
 	margin-right:5px;
 }
-.ff-text{
+.text-green{
 	color:#090;
 }
-a.ff-text{
+a.text-green{
 	color:#090;
 }
-a.ff-text:hover{
+a.text-green:hover{
 	color:#333;
 }
 .ff-footer{

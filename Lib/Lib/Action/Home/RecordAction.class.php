@@ -9,18 +9,13 @@ class RecordAction extends HomeAction{
 		$record['record_sid'] = !empty($_GET['sid']) ? intval($_GET['sid']) : 1;
 		$json = json_decode(D('Record')->ff_json($record), true);
 		$array = array();
-		if($json){
-			$i = 0;
-			foreach($json['vod'] as $key=>$value){
-				if($i < intval(C('ui_record'))){
-					$array[] = $key;
-				}
-				$i++;
-			}
+		foreach($json['vod'] as $key=>$value){
+			$array[] = $key;
 		}
 		$this->assign('vod_ids', implode(',',$array));
+		$this->assign('vod_json', $json);
 		$this->display('Record:'.$action);
-	}
+	}	
 	
 	
 	//获取记录json record-json-sid-1-type-1
@@ -51,6 +46,22 @@ class RecordAction extends HomeAction{
 		}else{
 			$this->ajaxReturn('', 'fail', 5002);
 		}
+	}
+	
+	//删除记录
+	public function delete(){
+		$user_id = D('User')->ff_islogin();
+		if($user_id){
+			$where = array();
+			$where['record_id'] = array('eq', intval($_GET['id']));
+			$where['record_uid'] = array('eq', $user_id);
+			if($info = D('Record')->where($where)->delete()){
+				$this->ajaxReturn($info, "删除成功！", 200);
+			}else{
+				$this->ajaxReturn(0, D('Record')->getError(), 0);
+			}
+		}
+		$this->ajaxReturn(0, '请先登录。', 0);
 	}
 }
 ?>

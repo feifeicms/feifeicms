@@ -3,7 +3,7 @@ class RecordViewModel extends ViewModel {
 	
 	protected $viewFields = array (
 		 'Record'=>array('*'),
-		 'User'=>array('user_id','user_name','user_face','_on'=>'Record.record_uid = User.user_id'),
+		 'User'=>array('user_id','user_name','user_email','user_face','_on'=>'Record.record_uid = User.user_id'),
 	);
 	
 	// 查询多个数据
@@ -31,7 +31,7 @@ class RecordViewModel extends ViewModel {
 			// 使用GET全局变量传递分页参数 gx_page_default
 			$_GET['ff_page_'.$params['page_id']] = $page;
 		}else{
-			$page['currentpage'] = false;
+			$page['currentpage'] = NULL;
 		}	
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->page($page['currentpage'])->group($params['group'])->order(trim($params['order'].' '.$params['sort']))->select();
 		//dump($this->getLastSql());

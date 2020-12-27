@@ -7,13 +7,6 @@
 <script charset="utf-8" src="__PUBLIC__/jquery/1.11.3/jquery.min.js"></script>
 <script charset="utf-8" src="__PUBLIC__/js/admin.js"></script>
 <script type="text/javascript">
-function changeid($sid){
-	if($sid == 1){
-		$(".list-vod").show();
-	}else if($sid == 2){
-		$(".list-vod").hide();
-	}
-};
 $(document).ready(function(){
 	changeid("{$list_sid}");
 	$('#list_sid').change(function(){
@@ -27,8 +20,18 @@ $(document).ready(function(){
 			return false;
 		}				
 	});
-	<notempty name="list_id">showseo({$list_sid});</notempty>
 });
+function changeid($sid){
+	if($sid == 1){
+		$(".list-vod").show();
+	}else if($sid > 1){
+		$(".list-vod").hide();
+	}
+	if($sid == 8){
+		$(".list-area").show();
+		$(".list-star").show();
+	}
+};
 </script>
 </head>
 <body class="body">
@@ -42,8 +45,21 @@ $(document).ready(function(){
     <div class="right"><a href="?s=Admin-List-Show">返回分类管理</a></div>
 </div>
 <div class="add">
-<ul><li class="left">所属模型：</li>
-  <li class="right"><select name="list_sid" id="list_sid" class="w120"><option value="1" <eq name="list_sid" value="1">selected</eq>>视频模型 | vod</option><option value="2" <eq name="list_sid" value="2">selected</eq>>新闻模块 | news</option></select>&nbsp;</li>
+<ul><li class="left">所属系统：</li>
+  <li class="right"><select name="list_sid" id="list_sid" class="w120">
+	<option value="1" <eq name="list_sid" value="1">selected</eq>>视频系统 | vod</option>
+	<option value="2" <eq name="list_sid" value="2">selected</eq>>文章系统 | news</option>
+	<option value="3" <eq name="list_sid" value="3">selected</eq>>专题系统 | special</option>	
+	<option value="7" <eq name="list_sid" value="7">selected</eq>>剧情系统 | scenario</option>
+	<option value="8" <eq name="list_sid" value="8">selected</eq>>明星系统 | star</option>
+	<option value="9" <eq name="list_sid" value="9">selected</eq>>角色系统 | role</option>
+	<option value="4" <eq name="list_sid" value="4">selected</eq>>标签系统 | tag</option>
+	<option value="5" <eq name="list_sid" value="5">selected</eq>>留言系统 | guestbook</option>	
+	<option value="6" <eq name="list_sid" value="6">selected</eq>>评论系统 | forum</option>
+	<option value="29" <eq name="list_sid" value="29">selected</eq>>地图系统 | map</option>
+	<option value="30" <eq name="list_sid" value="30">selected</eq>>搜索系统 | search</option>
+	<option value="13" <eq name="list_sid" value="13">selected</eq>>分类单页 | list</option>
+	</select></li>
 </ul>
 <ul><li class="left">上级分类：</li>
   <li class="right"><select name="list_pid" id="list_pid" class="w120"><option value="0">无</option><volist name=":ff_mysql_list('order:list_pid asc,list_oid;sort:asc')" id="feifei"><option value="{$feifei.list_id}" <eq name="feifei.list_id" value="$list_pid">selected</eq>>{$feifei.list_name}</option></volist></select> * 不选择将成为一级分类</li>
@@ -76,16 +92,22 @@ $(document).ready(function(){
    <li class="right"><input type="text" name="list_dir" id="list_dir" value="{$list_dir}" maxlength="40" class="w120"><label>留空则自动转为拼音</label></li>
 </ul>
 <ul><li class="left">分类页模板名：</li>
-   <li class="right"><input type="text" name="list_skin" id="list_skin" value="{$list_skin|default='vod_list'}" maxlength="40" error="* 使用模板名不能为空!" class="w120"><label><a href="javascript:" onClick="list_skin.value='channel';">频道页</a></label><span id="list_skin_error"></span></li>
+   <li class="right">
+	 <input type="text" name="list_skin" id="list_skin" value="{$list_skin|default='list'}" maxlength="40" error="* 使用模板名不能为空!" class="w120">
+	 <label>常用模板名：<a href="javascript:" onClick="list_skin.value='channel';">channel</a>
+	 <a href="javascript:" onClick="list_skin.value='list';">list</a>
+	 <a href="javascript:" onClick="list_skin.value='list_sp';">list_sp</a>
+	 <a href="javascript:" onClick="list_skin.value='top';">top</a>
+	 <a href="javascript:" onClick="list_skin.value='map';">map</a></label><span id="list_skin_error"></span></li>
 </ul>
 <ul><li class="left">详情页模板名：</li>
-   <li class="right"><input type="text" name="list_skin_detail" id="list_skin_detail" value="{$list_skin_detail|default='vod_detail'}" maxlength="40" class="w120"></li>
+   <li class="right"><input type="text" name="list_skin_detail" id="list_skin_detail" value="{$list_skin_detail|default='detail'}" maxlength="40" class="w120"></li>
 </ul>
 <ul class="list-vod"><li class="left">播放页模板名：</li>
-   <li class="right"><input type="text" name="list_skin_play" id="list_skin_play" value="{$list_skin_play|default='vod_play'}" maxlength="40" class="w120"></li>
+   <li class="right"><input type="text" name="list_skin_play" id="list_skin_play" value="{$list_skin_play|default='play'}" maxlength="40" class="w120"></li>
 </ul>
 <ul><li class="left">筛选页模板名：</li>
-   <li class="right"><input type="text" name="list_skin_type" id="list_skin_type" value="{$list_skin_type|default='vod_type'}" maxlength="40" class="w120"></li>
+   <li class="right"><input type="text" name="list_skin_type" id="list_skin_type" value="{$list_skin_type|default='type'}" maxlength="40" class="w120"></li>
 </ul>
 <ul><li class="left">分类SEO标题：</li>
    <li class="right"><input type="text" name="list_title" id="list_title" value="{$list_title}" maxlength="80" class="w400">&nbsp;</li>
@@ -99,13 +121,13 @@ $(document).ready(function(){
 <ul><li class="left">分类扩展配置.多分类：</li>
    <li class="right"><input type="text" name="list_extend[type]" id="list_extend_type" value="{$list_extend.type}" class="w400">&nbsp;</li>
 </ul>
-<ul class="list-vod"><li class="left">分类扩展配置.地区：</li>
+<ul class="list-vod list-area"><li class="left">分类扩展配置.地区：</li>
    <li class="right"><input type="text" name="list_extend[area]" id="list_extend_area" value="{$list_extend.area}" class="w400">&nbsp;</li>
 </ul>
 <ul class="list-vod"><li class="left">分类扩展配置.年代：</li>
    <li class="right"><input type="text" name="list_extend[year]" id="list_extend_year" value="{$list_extend.year}" class="w400">&nbsp;</li>
 </ul>
-<ul class="list-vod"><li class="left">分类扩展配置.明星：</li>
+<ul class="list-vod list-star"><li class="left">分类扩展配置.明星：</li>
    <li class="right"><input type="text" name="list_extend[star]" id="list_extend_star" value="{$list_extend.star}" class="w400">&nbsp;</li>
 </ul>
 <ul class="list-vod"><li class="left">分类扩展配置.资源：</li>
@@ -118,7 +140,7 @@ $(document).ready(function(){
    <li class="right"><input type="text" name="list_extend[version]" id="list_extend_version" value="{$list_extend.version}" class="w400">&nbsp;</li>
 </ul>
 <ul class="list-vod"><li class="left">分类扩展配置.周期：</li>
-   <li class="right"><input type="text" name="list_extend[weekday]" id="list_extend_weekday" value="{$list_extend.weekday|default='一,二,三,四,五,六,日'}" class="w400">&nbsp;</li>
+   <li class="right"><input type="text" name="list_extend[weekday]" id="list_extend_weekday" value="{$list_extend.weekday}" class="w400">&nbsp;</li>
 </ul>
 <ul class="footer">
 <input type="submit" name="submit" value="提交"> <input type="reset" name="reset" value="重置"> <gt name="admin_id" value="0">注：不修改密码请留空</gt>

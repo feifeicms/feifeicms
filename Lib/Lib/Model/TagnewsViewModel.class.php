@@ -5,7 +5,7 @@ class TagnewsViewModel extends ViewModel {
 	protected $viewFields = array (
 		 'Tag'=>array('*'),
 		 'News'=>array('*', '_on'=>'Tag.tag_id = News.news_id'),
-		 'List'=>array('list_id','list_name','list_dir', '_on'=>'News.news_cid = List.list_id'),
+		 'List'=>array('list_id','list_name','list_dir','list_skin', '_on'=>'News.news_cid = List.list_id'),
 	);
 	// 查询多个数据
 	public function ff_select_page($params, $where){
@@ -28,9 +28,10 @@ class TagnewsViewModel extends ViewModel {
 			// 使用GET全局变量传递分页参数 gx_page_default
 			$_GET['ff_page_'.$params['page_id']] = $page;
 		}else{
-			$page['currentpage'] = false;
+			$page['currentpage'] = NULL;
 		}	
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->page($page['currentpage'])->order(trim($params['order'].' '.$params['sort']))->group('news_id')->select();
+		//dump($this->getLastSql());
 		// 是否写入数据缓存
 		if($params['cache_name'] && $params['cache_time']){
 			S($params['cache_name'], $infos, intval($params['cache_time']) );
@@ -38,7 +39,6 @@ class TagnewsViewModel extends ViewModel {
 				S($params['cache_name'].'_page', $page, intval($params['cache_time'])+1 );
 			}
 		}
-		//dump($this->getLastSql());
 		return $infos;
 	}
 	// 符合条件的统计

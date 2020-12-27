@@ -4,31 +4,42 @@ class UserAction extends BaseAction{
   public function show(){
 		//默认定义
 		$params = array();
-		$params['field'] = '*';
-		$params['limit'] = 20;
 		$params['status'] = $_GET['status'];
 		$params['pid'] = $_GET['pid'];
 		$params['wd'] = urldecode(trim($_REQUEST['wd']));
-		$params['order'] = !empty($_GET['order'])?$_GET['order']:'user_'.C('admin_order_type');
+		$params['order'] = !empty($_GET['order'])?$_GET['order']:C('admin_order_type');
 		$params['order'] = str_replace('addtime','logtime',$params['order']);
 		$params['sort'] = !empty($_GET['sort'])?$_GET['sort']:'desc';
-		// 分页参数
+		//跳转参数
+		$urls = $params;
+		$urls['g'] = 'admin';
+		$urls['m'] = 'user';
+		$urls['a'] = 'show';
+		$this->assign('urls',$urls);
+		//基本参数
+		$params['field'] = '*';
+		$params['limit'] = 30;
+		//分页参数
 		$params['page_is'] = true;
 		$params['page_id'] = 'user';
 		$params['page_p'] = !empty($_GET['p'])?intval($_GET['p']):1;
-		// 缓存参数
+		//缓存参数
 		$params['cache_name'] = false;
 		$params['cache_time'] = false;
-		// 根据查询条件查询数据库
-		$array_data = ff_mysql_user($params);
-		// 拼装翻页参数
+		//数据查询
+		$array_data = ff_mysql_user(array_merge($params,array('order'=>'user_'.$params['order'])));
+		//拼装翻页参数
 		$page = $_GET['ff_page_user'];//records totalpages currentpage
-		$page['link'] = '?'.http_build_query( array('g'=>'admin','m'=>'user','a'=>'show','p'=>'FFLINK','order'=>$params['order'],'sort'=>$params['sort'],'status'=>$params['status'],'pid'=>$params['pid'],'wd'=>$params['wd']) );
-		$page['pages'] = '共'.$page['records'].'个用户&nbsp;当前:'.$page['currentpage'].'/'.$page['totalpages'].'页&nbsp;'.getpage($page['currentpage'],$page['totalpages'], 8, $page['link'], 'pagego(\''.$page['link'].'\','.$page['totalpages'].')');
-		// 模板定义
-		$this->assign($params);
+		$page['jump'] = './index.php?'.http_build_query(array_merge($urls,array('p'=>'FFLINK')));
+		$page['pages'] = '共'.$page['records'].'个用户&nbsp;当前:'.$page['currentpage'].'/'.$page['totalpages'].'页&nbsp;'.getpage($page['currentpage'],$page['totalpages'], 8, $page['jump'], 'pagego(\''.$page['jump'].'\','.$page['totalpages'].')');
+		//模板定义
+		$this->assign($urls);
 		$this->assign($page);
 		$this->assign('list',$array_data);
+		//回跳URL
+		session_start();
+		$_SESSION['jumpurl'] = './index.php?'.http_build_query(array_merge($urls,array('p'=>$admin['page_p'])));
+		//加载模板
     $this->display('./Public/system/user_show.html');
   }
 	// 用户添加与编辑表单

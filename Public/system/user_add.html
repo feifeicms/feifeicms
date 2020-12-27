@@ -114,14 +114,14 @@ $(document).ready(function(){
 </div>
 <div class="add">
 <ul><li class="left">用户名：</li>
-  <li class="right"><input type="text" name="user_name" id="user_name" value="{$user_name}" class="w200"></li>
+  <li class="right"><input type="text" name="user_name" id="user_name" value="{$user_name|htmlspecialchars}" class="w200"></li>
 </ul>
 <ul><li class="left">用户邮箱：</li>
-   <li class="right"><input type="text" name="user_email" id="user_email" value="{$user_email}" class="w200"></li>
+   <li class="right"><input type="text" name="user_email" id="user_email" value="{$user_email|htmlspecialchars}" class="w200"></li>
 </ul>
 <ul><li class="left">用户头像：</li>
    <li class="right">
-   <label style="float:left; margin-top:3px; margin-right:5px"><input type="text" name="user_face" id="user_face" value="{$user_face}" class="w200" onMouseOver="if(this.value)showpic(event,this.value,'{&upload_path}/');" onMouseOut="hiddenpic();"></label>
+   <input type="text" name="user_face" id="user_face" value="{$user_face}" class="w200" onMouseOver="if(this.value)showpic(event,this.value,'{&upload_path}/');" onMouseOut="hiddenpic();" style="float:left; margin-top:3px; margin-right:5px">
    <iframe src="?s=Admin-Upload-Show-sid-user-fileback-user_face" scrolling="no" topmargin="0" width="280" height="26" marginwidth="0" marginheight="0" frameborder="0" align="left" style="margin-top:3px; float:left"></iframe>
    </li>
 </ul>
@@ -145,7 +145,7 @@ $(document).ready(function(){
    </li>
 </ul>
 <ul><li class="left">最后登录IP：</li>
-   <li class="right"><input type="text" name="user_logip" id="user_logip" value="{$user_logip}" class="w200"></li>
+   <li class="right"><input type="text" name="user_logip" id="user_logip" value="{$user_logip|htmlspecialchars}" class="w200"></li>
 </ul>
 <ul><li class="left">最后登录时间：</li>
    <li class="right"><input type="text" name="user_logtime" id="user_logtime" value="{$user_logtime|date='Y-m-d H:i:s',###}" class="w200"></li>
@@ -154,7 +154,7 @@ $(document).ready(function(){
    <li class="right"><input type="text" name="user_lognum" id="user_lognum" value="{$user_lognum}" class="w200"></li>
 </ul>
 <ul><li class="left">用户注册IP：</li>
-   <li class="right"><input type="text" name="user_joinip" id="user_joinip" value="{$user_joinip}" class="w200"></li>
+   <li class="right"><input type="text" name="user_joinip" id="user_joinip" value="{$user_joinip|htmlspecialchars}" class="w200"></li>
 </ul>
 <ul><li class="left">用户注册时间：</li>
    <li class="right"><input type="text" name="user_jointime" id="user_jointime" value="{$user_jointime|date='Y-m-d H:i:s',###}" class="w200"></li>

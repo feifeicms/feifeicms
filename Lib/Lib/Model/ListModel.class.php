@@ -27,7 +27,7 @@ class ListModel extends AdvModel {
 	public function ff_find($field = '*', $where, $cache_name){
 		//md5处理KEY
 		if($cache_name){
-			$cache_name = md5($cache_name);
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
 		}
 		//优先缓存读取数据
 		if( C('cache_page_list') && $cache_name){
@@ -57,8 +57,19 @@ class ListModel extends AdvModel {
 			if($infos){
 				return $infos;
 			}
-		}		
+		}
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->order(trim($params['order'].' '.$params['sort']))->select();
+		//dump($this->getLastSql());
+		//转化扩展配置与定义分类链接
+		foreach($infos as $key=>$value){
+			if($value['list_sid'] == 1){
+				$infos[$key]['list_link'] = ff_url_vod_show($value['list_id'], $value['list_dir'], 1);
+			}else if($value['list_sid'] == 2){
+				$infos[$key]['list_link'] = ff_url_news_show($value['list_id'], $value['list_dir'], 1);
+			}
+			$infos[$key]['list_extend'] = json_decode($value['list_extend'],true);
+		}
+		//二维数组转换
 		if($infos_son = list_to_tree($infos, 'list_id', 'list_pid', 'list_son')){
 			$infos = $infos_son;
 		}
@@ -66,7 +77,6 @@ class ListModel extends AdvModel {
 		if($params['cache_name'] && $params['cache_time']){
 			S($params['cache_name'], $infos, intval($params['cache_time']) );
 		}
-		//dump($this->getLastSql());
 		return $infos;
 	}
 	

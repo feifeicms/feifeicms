@@ -1,31 +1,31 @@
 <php>
-$item_vod = ff_mysql_vod('cid:'.$list_id.';limit:30;page_is:true;page_id:list;page_p:'.$list_page.';cache_name:default;cache_time:default;order:vod_stars desc,vod_addtime;sort:desc');
-if($action == 'category'){
-	$page = ff_url_page('vod/category',array('id'=>$list_dir,'p'=>'FFLINK'),true,'list',4);
+$item_vod = ff_mysql_vod('cid:'.ff_list_ids($list_id).';limit:60;page_is:true;page_id:list;page_p:'.$list_page.';cache_name:default;cache_time:default;order:vod_stars desc,vod_addtime;sort:desc');
+if($action == 'ename'){
+	$page = ff_url_page('list/ename',array('id'=>$list_dir,'p'=>'FFLINK'),true,'list',4);
 }else{
-  $page = ff_url_page('vod/show',array('id'=>$list_id,'list_dir'=>$list_dir,'p'=>'FFLINK'),true,'list',4);
+  $page = ff_url_page('list/read',array('id'=>$list_id,'list_dir'=>$list_dir,'p'=>'FFLINK'),true,'list',4);
 }
 $totalpages = ff_page_count('list', 'totalpages');
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:vod_list" />
+<include file="./Tpl/base/bootstrap3/inc_header" />
+<include file="./Tpl/base/seo/vod_list" />
 </head>
 <body class="vod-list-sp">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
 <div class="container ff-bg">
 <div class="page-header">
   <h2>
-  <span class="glyphicon glyphicon-film ff-text"></span>
+  <span class="glyphicon glyphicon-film text-green"></span>
   <a href="{:ff_url_vod_show($list_id,$list_dir,1)}">{$list_name}</a>
-  <small>共有<span class="ff-text">{:ff_page_count('list', 'records')}</span>个影片 第<span class="ff-text">{$list_page}</span>页</small>
-  <a class="btn btn-success btn-xs pull-right" href="{:ff_url('vod/type',array('id'=>$list_id,'type'=>'','area'=>'','year'=>'','star'=>'','state'=>'','order'=>'hits','p'=>1),true)}"><span class="glyphicon glyphicon-th-list"></span> 筛选</a>
+  <small>共有<span class="text-green">{:ff_page_count('list', 'records')}</span>个影片 第<span class="text-green">{$list_page}</span>页</small>
+  <a class="btn btn-success btn-xs pull-right" href="{:ff_url('list/select',array('id'=>$list_id,'type'=>'','area'=>'','year'=>'','star'=>'','state'=>'','order'=>'hits','p'=>1),true)}"><span class="glyphicon glyphicon-th-list"></span> 筛选</a>
   </h2>
 </div>
 <ul class="list-unstyled vod-item-img ff-img-90">
   <volist name="item_vod" id="feifei">
-  <include file="Base:vod_item_img_sp" />
+  <include file="BlockTheme:item_img_vod_sp" />
   </volist>
 </ul>
 <gt name="totalpages" value="1">
@@ -45,9 +45,9 @@ $totalpages = ff_page_count('list', 'totalpages');
 </div>
 </gt>
 </div><!--container end -->
-<div class="clearfix ff-clearfix"></div>
+<div class="clearfix mb-2"></div>
 <div class="container ff-bg">
-  <include file="Block:footer" />
+  <include file="BlockTheme:footer" />
 </div>
 </body>
 </html>

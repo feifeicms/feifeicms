@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:news_channel" />
+<include file="BlockTheme:header_meta" />
+<include file="./Tpl/base/seo/news_channel" />
 </head>
 <body class="news-list">
-<include file="Block:header" />
-<div class="container ff-bg">
+<include file="BlockTheme:header" />
 <volist name=":explode(',',$list_extend['type'])" id="feifei" offset="0" length="12">
-<php>$item_news = ff_mysql_news('cid:'.$list_id.';tag_name:'.$feifei.';tag_list:news_type;limit:30;cache_name:default;cache_time:default;order:news_addtime;sort:desc');</php>
-<notempty name="item_news">
-<div class="page-header">
+<php>$item_news=ff_mysql_news('cid:'.ff_list_ids($list_id).';tag_name:'.$feifeilist.';tag_list:news_type;limit:10;cache_name:default;cache_time:default;order:news_id;sort:desc');if(!$item_news){continue;}</php>
+<div class="container ff-bg">
+<div class="page-header mb-0">
   <h2>
-    <span class="glyphicon glyphicon-list-alt ff-text"></span>
-    <a href="{:ff_url('news/type',array('type'=>urlencode($feifei),'id'=>$list_id,'p'=>1),true)}">{$feifei}</a>
+    <span class="glyphicon glyphicon-list-alt text-green"></span>
+    <a href="{:ff_url('list/select',array('id'=>$list_id,'type'=>urlencode($feifei),'p'=>1),true)}">{$feifei}</a>
+		<span class="pull-right">
+		<a class="btn btn-success btn-xs" href="{:ff_url('list/select',array('id'=>$list_id,'type'=>urlencode($feifei),'p'=>1),true)}">更多</a>
+		</span>
   </h2>
 </div>
 <ul class="news-item-ul ff-row">
   <volist name="item_news" id="feifei">
-    <include file="Base:news_item_hot" />
+    <include file="BlockTheme:item_txt_news_hits" />
   </volist>
 </ul>
-<div class="clearfix ff-clearfix"></div>
-</notempty>
-</volist>
 </div><!--container end -->
-<include file="Block:footer" />
+<div class="clearfix mb-1"></div>
+</volist>
+<include file="BlockTheme:footer" />
 </body>
 </html>

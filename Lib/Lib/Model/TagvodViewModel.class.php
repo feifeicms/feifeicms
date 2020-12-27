@@ -6,7 +6,7 @@ class TagvodViewModel extends ViewModel {
 		 //'Tag'=>array('*','tag_id'=>'vod_tag_id','tag_name'=>'vod_tag_name','tag_list'=>'vod_tag_list'),
 		 'Tag'=>array('*'),
 		 'Vod'=>array('*', '_on'=>'Tag.tag_id = Vod.vod_id'),
-		 'List'=>array('list_id','list_name','list_dir', '_on'=>'Vod.vod_cid = List.list_id'),
+		 'List'=>array('list_id','list_name','list_dir','list_skin', '_on'=>'Vod.vod_cid = List.list_id'),
 	);
 	
 	// 查询多个数据
@@ -30,7 +30,7 @@ class TagvodViewModel extends ViewModel {
 			// 使用GET全局变量传递分页参数 gx_page_default
 			$_GET['ff_page_'.$params['page_id']] = $page;
 		}else{
-			$page['currentpage'] = false;
+			$page['currentpage'] = NULL;
 		}	
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->page($page['currentpage'])->order(trim($params['order'].' '.$params['sort']))->group('vod_id')->select();
 		// 是否写入数据缓存

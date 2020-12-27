@@ -1,96 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:vod_detail" />
+<include file="./Tpl/base/bootstrap3/inc_header" />
+<include file="./Tpl/base/seo/vod_detail" />
 </head>
 <body class="vod-detail">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
+<include file="./Tpl/base/bootstrap3/vod_playurl" />
 <div class="container ff-bg">
-<div class="page-header">
-  <h2>
-    <span class="glyphicon glyphicon-film ff-text"></span>
-    <a href="{:ff_url_vod_show($list_id,$list_dir,1)}">{$list_name}</a>
-    <a href="{:ff_url_vod_read($list_id,$list_dir,$vod_id,$vod_ename,$vod_jumpurl)}">{$vod_name|msubstr=0,8,true}</a>
-    <small>影片详情</small>
-    <small class="pull-right hidden-xs">
-      相关链接： 
-      <a href="{:ff_url('forum/vod',array('cid'=>$vod_id,'p'=>1),true)}" target="_blank">{$vod_name|msubstr=0,8,true}影评</a>
-      <notempty name="vod_scenario.info">
-      <a href="{:ff_url('scenario/detail',array('id'=>$vod_id),true)}" target="_blank">{$vod_name|msubstr=0,8,true}剧情</a>
-      </notempty>
-    </small>
-  </h2>
-</div>
+<h4 class="h4 text-nowrap">
+	<include file="BlockTheme:vod_inc_label" />
+</h4>
 <div class="row">
 <div class="col-md-8 col-xs-12">
-	<div class="media">
-  	<div class="media-left">
-      <a href="{:ff_url_vod_read($list_id,$list_dir,$vod_id,$vod_ename,$vod_jumpurl)}">
-        <img class="media-object img-thumbnail ff-img" data-original="{$vod_pic|ff_url_img=$vod_content}" alt="{$vod_name}免费观看">
-      </a>
-      <div class="hidden-xs hidden-sm">
-      <p class="text-center">
-      	<include file="Base:vod_record" />
-      </p>
-      </div>
-    </div>
-    <div class="media-body">
-    	<h2>
-      	<a class="ff-text" href="{:ff_url_vod_read($list_id,$list_dir,$vod_id,$vod_ename,$vod_jumpurl)}">{$vod_name}</a>
-        <small><include file="Base:vod_continu" /></small>
-      </h2>
-      <dl class="dl-horizontal">
-        <dt>主演：</dt>
-        <dd class="ff-text-right">{$vod_actor|ff_url_search}</dd>
-        <dt>导演：</dt>
-        <dd class="ff-text-right">{$vod_director|ff_url_search='director'}</dd>
-        <dt>类型：</dt>
-        <dd class="ff-text-right">
-        <a href="{:ff_url_vod_show($list_id,$list_dir,1)}">{$list_name}</a>
-        <include file="Base:vod_type" />
-        </dd>
-        <dt>地区：</dt>
-        <dd class="ff-text-right"><include file="Base:vod_area" /></dd>
-        <dt>年份：</dt>
-        <dd class="ff-text-right"><a href="{:ff_url('vod/type',array('id'=>$list_id,'type'=>'','area'=>'','year'=>$vod_year,'star'=>'','state'=>'','order'=>'hits'),true)}">{$vod_year|default='2017'}</a></dd>
-        <dt class="hidden-xs hidden-sm">剧情：</dt>
-        <dd class="ff-text-right hidden-xs hidden-sm">
-        	<include file="Base:vod_content" />
-        </dd>
-      </dl>
-    </div>
-  </div>
+<div class="media">
+	<div class="media-left">
+		<a href="{:ff_url_read_vod($list_id,$list_dir,$vod_id,$vod_ename,$vod_jumpurl)}">
+			<img class="media-object img-thumbnail ff-img" data-original="{$vod_pic|ff_url_img=$vod_content}" alt="{$vod_name}免费观看">
+		</a>
+		<div class="hidden-xs hidden-sm">
+			<include file="./Tpl/base/bootstrap3/vod_record" />
+		</div>
+	</div>
+	<div class="media-body">
+		<h4 class="text-nowrap">
+			<a class="text-green" href="{:ff_url_read_vod($list_id,$list_dir,$vod_id,$vod_ename,$vod_jumpurl)}" title="{$vod_name}">{$vod_name|msubstr=0,20,true}</a>
+			<small><include file="./Tpl/base/bootstrap3/vod_continu" /></small>
+		</h4>
+		<dl class="dl-horizontal">
+			<dt>主演：</dt>
+			<dd class="text-mr-1"><include file="./Tpl/base/bootstrap3/vod_actor" /></dd>
+			<dt>导演：</dt>
+			<dd class="text-mr-1"><include file="./Tpl/base/bootstrap3/vod_director" /></dd>
+			<dt class="hidden-xs hidden-sm">编剧：</dt>
+			<dd class="text-mr-1 hidden-xs hidden-sm"><include file="./Tpl/base/bootstrap3/vod_writer" /></dd>
+			<dt>类型：</dt>
+			<dd class="text-mr-1"><include file="./Tpl/base/bootstrap3/vod_type" /></dd>
+			<dt class="text-mr-1 hidden-xs hidden-sm">地区：</dt>
+			<dd class="text-mr-1 hidden-xs hidden-sm"><include file="./Tpl/base/bootstrap3/vod_area" /></dd>
+			<dt>年份：</dt>
+			<dd class="text-mr-1"><include file="./Tpl/base/bootstrap3/vod_year" /></dd>				
+		</dl>		
+		<div class="vod-score">
+			<include file="./Tpl/base/bootstrap3/vod_score" />
+		</div>
+		<div class="hidden-xs hidden-sm">
+			<include file="./Tpl/base/bootstrap3/vod_content" />
+		</div>
+	</div>
+</div>
 </div>
 <div class="col-md-4 ff-col hidden-xs hidden-sm">
-  <include file="Base:vod_score" />
-  <div class="clearfix"></div>
-  <div class="text-center ff-ads">
-  {:ff_url_ads('300_250')}
+  <div class="text-center ff-ads ff-ads-250">
+  	{:ff_url_ads('300_250')}
   </div>
+	<div class="clearfix mb-1"></div>
+	<p class="ff-ads-btn">
+		{:ff_url_ads('300_15')}
+	</p>
 </div>
 </div><!--row end -->
-<include file="Base:vod_playurl" />
 <!-- -->
-<include file="Base:vod_playurl_line" />
+<div class="clearfix mb-3"></div>
+<include file="./Tpl/base/bootstrap3/vod_playurl_line_tab" />
 <!-- -->
-<include file="Base:vod_playurl_yugao" />
+<include file="BlockTheme:vod_inc_hot" />
 <!-- -->
-<include file="Base:vod_playurl_down" />
+<include file="BlockTheme:vod_inc_series" />
 <!-- -->
-<include file="Base:vod_scenario" />
-<!-- -->
-<include file="Block:vod_item_img_series" />
-<!-- -->
-<include file="Block:vod_item_img_actor" />
-<!-- -->
-<include file="Block:vod_item_img_hot" />
-<!-- -->
-<include file="Base:vod_forum" />
+<include file="./Tpl/base/bootstrap3/forum_ajax_vod" />
 </div><!--container end -->
-<div class="clearfix ff-clearfix"></div>
+<div class="clearfix mb-2"></div>
 <div class="container ff-bg">
-  <include file="Block:footer" />
+  <include file="BlockTheme:footer" />
 </div>
 </body>
 </html>

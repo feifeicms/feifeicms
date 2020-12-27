@@ -22,11 +22,11 @@ $(document).ready(function(){
 <volist name="list_cj" id="feifei">
 <tr>
 <td class="r pd">{$i}、</td>
-<td class="r pd"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-action-show-xmlurl-{$feifei.cj_url|base64_encode}" class="h"><b>{$feifei.cj_name}</b> {$feifei.cj_url}</a></td>
-<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-action-show-xmlurl-{$feifei.cj_url|base64_encode}#bind">分类转换</a></td>
-<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-action-days-xmlurl-{$feifei.cj_url|base64_encode}-h-24" target="_blank">采集当天</a></td>
-<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-action-days-xmlurl-{$feifei.cj_url|base64_encode}-h-98" target="_blank">采集本周</a></td>
-<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-action-all-xmlurl-{$feifei.cj_url|base64_encode}" target="_blank">采集所有</a></td>
+<td class="r pd"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-apikey-{$feifei.cj_appkey}-action-show-xmlurl-{$feifei.cj_url|base64_encode}" class="h"><b>{$feifei.cj_name}</b> {$feifei.cj_url}</a></td>
+<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-apikey-{$feifei.cj_appkey}-action-show-xmlurl-{$feifei.cj_url|base64_encode}#bind">分类转换</a></td>
+<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-apikey-{$feifei.cj_appkey}-action-days-xmlurl-{$feifei.cj_url|base64_encode}-h-24" target="_blank">采集当天</a></td>
+<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-apikey-{$feifei.cj_appkey}-action-days-xmlurl-{$feifei.cj_url|base64_encode}-h-98" target="_blank">采集本周</a></td>
+<td class="l ct"><a href="?s=Admin-Cj-Apis-cjid-{$feifei.cj_id}-cjtype-1-apikey-{$feifei.cj_appkey}-action-all-xmlurl-{$feifei.cj_url|base64_encode}" target="_blank">采集所有</a></td>
 <td class="r ct"><a href="?s=Admin-Cj-Add-id-{$feifei.cj_id}">修改</a> <a href="?s=Admin-Cj-Del-id-{$feifei.cj_id}" onClick="return confirm('确定删除吗?')" title="点击删除">删除</a></td>
 </tr>
 </volist>

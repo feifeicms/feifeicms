@@ -15,7 +15,7 @@ class IndexAction extends BaseAction{
 	
     public function right(){
       $this->display('./Public/system/right.html');
-    }	
+    }
 	
     public function phpinfo(){
       phpinfo();

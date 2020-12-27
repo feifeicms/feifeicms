@@ -5,7 +5,7 @@ class HitsAction extends HomeAction{
 		$id	= intval($_GET['id']);
 		$sid = trim($_GET['sid']);
 		$type = trim($_GET['type']);
-		if( in_array($sid, array('vod','news','special')) ){
+		if( in_array($sid, array('vod','news','special','person')) ){
 			$where = array();
 			$where[$sid.'_id'] = $id;
 			$rs = M(ucfirst($sid));
@@ -52,6 +52,26 @@ class HitsAction extends HomeAction{
 		$rs = M(ucfirst($sid));
 		$rs->save($hits);
 		return $hits;
+	}
+	//计划任务执行
+	public function task($crontab=false){
+		if(!$crontab){ exit; }
+		D('Vod')->where('vod_id>0')->save(array('vod_hits_day'=>0));
+		D('News')->where('news_id>0')->save(array('news_hits_day'=>0));
+		D('Special')->where('special_id>0')->save(array('special_hits_day'=>0));
+		D('Person')->where('person_id>0')->save(array('person_hits_day'=>0));
+		if(date('w', time()) == '0'){//本周第一天
+			D('Vod')->where('vod_id>0')->save(array('vod_hits_week'=>0));
+			D('News')->where('news_id>0')->save(array('news_hits_week'=>0));
+			D('Special')->where('special_id>0')->save(array('special_hits_week'=>0));
+			D('Person')->where('person_id>0')->save(array('person_hits_week'=>0));
+		}
+		if(date('d', time()) == '01'){//本月第一天
+			D('Vod')->where('vod_id>0')->save(array('vod_hits_month'=>0));
+			D('News')->where('news_id>0')->save(array('news_hits_month'=>0));
+			D('Special')->where('special_id>0')->save(array('special_hits_month'=>0));
+			D('Person')->where('person_id>0')->save(array('person_hits_month'=>0));
+		}
 	}
 }
 ?>

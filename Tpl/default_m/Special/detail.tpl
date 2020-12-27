@@ -8,43 +8,51 @@
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:special_detail" />
+<include file="BlockTheme:header_meta" />
+<include file="./Tpl/base/seo/special_detail" />
 </head>
 <body class="special-detail">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
+<div class="container ff-bg">
+	<div class="page-header">
+		<h2 class="text-ellipsis">
+		<span class="glyphicon glyphicon-calendar text-green"></span>
+		<a class="text-green" href="{:ff_url('list/read',array('id'=>$list_id),true)}">{$list_name}</a>
+		<a href="{:ff_url('special/read',array('id'=>$special_id),true)}">{$special_name}</a>
+		</h2> 
+	</div>
+	<p class="special-banner"><img class="img-thumbnail img-responsive ff-img" data-original="{$special_banner|ff_url_img}"></p>
+	<p class="special-content">{$special_content|strip_tags}</p>
+</div>
+<div class="clearfix mb-1"></div>
 <div class="container ff-bg">
 <div class="page-header">
-  <h2>
-  <span class="glyphicon glyphicon-calendar ff-text"></span>
-  <span class="ff-text">专题：{$special_name}</span>
-  </h2> 
-</div>
-<p><img class="img-thumbnail img-responsive ff-img" data-original="{$special_banner|ff_url_img}"></p>
-<p>{$special_content}</p>
-<div class="page-header">
-  <h2><span class="glyphicon glyphicon-film ff-text"></span> 相关影片</h2>
+  <h2><span class="glyphicon glyphicon-film text-green"></span> 相关影片</h2>
 </div>
 <ul class="list-unstyled vod-item-img ff-img-140">
 <volist name="item_vod" id="feifei">
-<include file="Base:vod_item_img" />
+<include file="BlockTheme:item_img_vod" />
 </volist>
 </ul>
 <notempty name="item_news">
 <div class="clearfix"></div>
 <div class="page-header">
-  <h2><span class="glyphicon glyphicon-list-alt ff-text"></span> 相关资讯</h2>
+  <h2><span class="glyphicon glyphicon-list-alt text-green"></span> 相关资讯</h2>
 </div>
 <ul class="news-item-ul ff-row">
   <volist name="item_news" id="feifei">
-    <include file="Base:news_item_hot" />
+    <include file="BlockTheme:item_txt_news_hits" />
   </volist>
 </ul>
 </notempty>
+</div>
+<div class="clearfix mb-1"></div>
 <!-- -->
-<include file="Base:special_forum" />
+<div class="container ff-bg">
+<include file="./Tpl/base/bootstrap3/forum_ajax_special" />
+</div>
+<div class="clearfix mb-1"></div>
 {$special_hits_insert}
-</div><!--container end -->
-<include file="Block:footer" />
+<include file="BlockTheme:footer" />
 </body>
 </html>

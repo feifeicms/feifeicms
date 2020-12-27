@@ -1,4 +1,4 @@
-<php>$item_orders = ff_mysql_orders('uid:'.$user_id.';limit:30;page_is:true;page_id:orders;page_p:'.$user_page.';cache_name:default;cache_time:default;order:order_id;sort:desc');
+<php>$item_orders = ff_mysql_orders('uid:'.$user_id.';limit:30;page_is:true;page_id:orders;page_p:'.$user_page.';order:order_id;sort:desc');
 $page = ff_url_page('user/center',array('action'=>'orders','p'=>'FFLINK'),true,'orders',4);
 $totalpages = ff_page_count('orders', 'totalpages');
 </php><!DOCTYPE html>
@@ -15,7 +15,7 @@ $totalpages = ff_page_count('orders', 'totalpages');
 <div class="row">
   <div class="col-xs-12 ff-col">
     <div class="page-header">
-      <h4><span class="glyphicon glyphicon-menu-right ff-text"></span> 我的订单管理</h4>
+      <h4><span class="glyphicon glyphicon-menu-right text-green"></span> 我的订单管理</h4>
     </div>
     <table class="table table-bordered table-responsive text-center">
     <thead>

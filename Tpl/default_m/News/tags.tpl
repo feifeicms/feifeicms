@@ -1,28 +1,45 @@
-<php>$item_news = ff_mysql_news('limit:10;tag_name:'.$tag_name.';tag_list:news_tag;page_is:true;page_id:newstag;page_p:'.$tag_page.';cache_name:default;cache_time:default;order:news_addtime;sort:desc');
-$page = ff_url_page('news/tags',array('name'=>urlencode($tag_name),'p'=>'FFLINK'), true, 'newstag', 4);
-$totalpages = ff_page_count('newstag', 'totalpages');
+<php>$item_news = ff_mysql_news('limit:20;tag_name:'.$tag_name.';tag_list:news_tag;page_is:true;page_id:newstag;page_p:'.$tag_page.';cache_name:default;cache_time:default;order:news_addtime;sort:desc');
+$page_total = ff_page_count('newstag', 'totalpages');
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:news_tags" />
+<include file="BlockTheme:header_meta" />
+<include file="./Tpl/base/seo/news_tags" />
 </head>
 <body class="news-tags">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
 <div class="container ff-bg">
-<div class="page-header">
+<div class="page-header mb-0">
   <h2>
-    <span class="glyphicon glyphicon-list-alt ff-text"></span> 话题：{$tag_type}{$tag_tag}{$tag_name}
-    <small>共有<span class="ff-text">{:ff_page_count('newstag', 'records')}</span>篇内容</small>
+    <span class="glyphicon glyphicon-tag text-green"></span>
+		{$tag_type}{$tag_tag}{$tag_name}
+    <small>共有<span class="text-green">{:ff_page_count('newstag', 'records')}</span>篇 第<span class="text-green">{$tag_page}</span>页</small>
   </h2>
 </div>
 <!-- -->
 <volist name="item_news" id="feifei">
-	<include file="Base:news_item_medial" />
+	<include file="BlockTheme:item_medial_news" />
 </volist>
+</div>
 <!-- -->
-<div class="page-header">
-  <h2><span class="glyphicon glyphicon-th-list ff-text"></span> 热门话题</h2>
+<gt name="page_total" value="1">
+  <div class="clearfix mb-1"></div>
+  <div class="container ff-bg text-center">
+    <ul class="pager">
+      <gt name="tag_page" value="1">
+        <li><a id="ff-prev" href="{:ff_url('news/tags', array('name'=>urlencode($tag_name),'p'=>$tag_page-1), true)}">上一页</a></li>
+      </gt>
+      <lt name="tag_page" value="$page_total">
+        <li><a id="ff-next" href="{:ff_url('news/tags', array('name'=>urlencode($tag_name),'p'=>$tag_page+1), true)}">下一页</a></li>
+      </lt>
+     </ul>
+  </div>
+</gt>
+<!-- -->
+<div class="clearfix mb-1"></div>
+<div class="container ff-bg">
+<div class="page-header mb-0">
+  <h2><span class="glyphicon glyphicon-th-list text-green"></span> 热门话题</h2>
 </div>
 <ul class="nav nav-pills">
   <volist name=":ff_mysql_tags('limit:21;cid:4;group:tag_name,tag_list;cache_name:default;cache_time:default;order:tag_count;sort:desc')" id="feifei" mod="7">
@@ -34,34 +51,7 @@ $totalpages = ff_page_count('newstag', 'totalpages');
   </volist>
 </ul>
 </div>
-<!-- -->
-<gt name="totalpages" value="1">
-  <div class="clearfix ff-clearfix"></div>
-  <div class="container ff-bg text-center">
-    <ul class="pager">
-      <gt name="tag_page" value="1">
-        <li><a id="ff-prev" href="{:ff_url('news/tags', array('name'=>urlencode($tag_name),'p'=>$tag_page-1), true)}">上一页</a></li>
-      </gt>
-      <lt name="tag_page" value="$totalpages">
-        <li><a id="ff-next" href="{:ff_url('news/tags', array('name'=>urlencode($tag_name),'p'=>$tag_page+1), true)}">下一页</a></li>
-      </lt>
-     </ul>
-  </div>
-</gt>
-<!-- -->
-<div class="clearfix ff-clearfix"></div>
-<div class="container ff-bg">
-<div class="page-header">
-  <h2><span class="glyphicon glyphicon-signal ff-text"></span> 最近更新</h2>
-</div>
-<php>$item_news = ff_mysql_news('limit:20;cache_name:default;cache_time:default;order:news_addtime;sort:desc');</php>
-<ul class="news-item-ul ff-row">
-  <volist name="item_news" id="feifei">
-    <include file="Base:news_item_hot" />
-  </volist>
-</ul>
-</div>
-<!--container end -->
-<include file="Block:footer" />
+<div class="clearfix mb-1"></div>
+<include file="BlockTheme:footer" />
 </body>
 </html>

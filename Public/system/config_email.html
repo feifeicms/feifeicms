@@ -18,7 +18,7 @@
     <li class="right"><input type="text" name="config[email_username]" id="email_username" value="{$email_username}">&nbsp;</li>
   </ul>
   <ul><li class="left">SMTP 密码：</li>
-    <li class="right"><input type="password" name="config[email_password]" id="email_password" value="{$email_password}">&nbsp;</li>
+    <li class="right"><input type="password" name="config[email_password]" id="email_password" value="{$email_password}">&nbsp;<label>QQ邮箱密码或授权码</label></li>
   </ul>
   <ul><li class="left">SMTP 端口：</li>
     <li class="right"><input type="text" name="config[email_port]" id="email_port" value="{$email_port}">
@@ -31,10 +31,13 @@
     </li>
   </ul>
   <ul><li class="left">测试地址：</li>
-    <li class="right"><input type="text" name="config[email_usertest]" id="email_usertest" value="{$email_usertest}">&nbsp;<label><a href="?s=Admin-Email-test" target="_blank">发送测试邮件（需提交保存后再测试）</a></label></li>
+    <li class="right"><input type="text" name="config[email_usertest]" id="email_usertest" value="{$email_usertest}">
+		<label><a href="?s=Admin-Email-test" target="_blank">发送测试邮件（首次配置需提交保存后再测试）</a></label></li>
   </ul>
   <ul><li class="left"></li>
-    <li class="right"><label>注：如用启用了用户系统，则必须成功配置邮件发送模块，否则用户不能找回密码。</label></li>
+    <li class="right">
+		<label>如用启用了用户系统，则必须成功配置邮件发送模块，否则用户不能找回密码。</label>
+		</li>
   </ul>
   <!-- -->
   <ul class="footer">

@@ -1,4 +1,4 @@
-<php>$item_orders = ff_mysql_orders('uid:'.$user_id.';limit:30;page_is:true;page_id:orders;page_p:'.$user_page.';cache_name:default;cache_time:default;order:order_id;sort:desc');
+<php>$item_orders = ff_mysql_orders('uid:'.$user_id.';limit:30;page_is:true;page_id:orders;page_p:'.$user_page.';order:order_id;sort:desc');
 $page = ff_url_page('user/center',array('action'=>'orders','p'=>'FFLINK'),true,'orders',4);
 $totalpages = ff_page_count('orders', 'totalpages');
 </php><!DOCTYPE html>
@@ -15,26 +15,32 @@ $totalpages = ff_page_count('orders', 'totalpages');
 <div class="row">
   <div class="col-xs-12 ff-col">
     <div class="page-header">
-      <h4><span class="glyphicon glyphicon-menu-right ff-text"></span> 我的订单管理</h4>
+      <h4><span class="glyphicon glyphicon-menu-right text-green"></span> 我的订单管理</h4>
     </div>
-    <table class="table table-bordered table-responsive text-center">
-    <thead>
-      <tr>
-      	<th class="text-center">订单号</th>
-      	<th class="text-center">支付</th>
-      	<th class="text-center">状态</th>
-      </tr>
-    </thead>
-    <tbody>
-     <volist name="item_orders" id="feifei">
-      <tr>
-      	<td>{$feifei.order_sign}</td>
-      	<td><switch name="feifei.order_ispay"><case value="1">付款中</case><case value="2"><font color="green">已付款</font></case><default/>未付款</switch></td>
-      	<td><switch name="feifei.order_status"><case value="1">已确认</case><case value="2">已取消</case><case value="3">无效</case><case value="4">退货</case><default/>未确认</switch></td>
-      </tr>
-      </volist>
-    </tbody>
-  </table>
+		<div class="table-responsive">
+			<table class="table table-bordered table-responsive text-center">
+			<thead>
+				<tr>
+					<th class="text-center">订单名称</th>
+					<th class="text-center">订单号</th>
+					<th class="text-center">下单日期</th>
+					<th class="text-center">支付状态</th>
+					<th class="text-center">订单状态</th>
+				</tr>
+			</thead>
+			<tbody>
+			 <volist name="item_orders" id="feifei">
+				<tr>
+					<td>{$feifei.order_info}</td>
+					<td>{$feifei.order_sign}</td>
+					<td>{$feifei.order_addtime|date='Y-m-d H:i:s',###}</td>
+					<td><switch name="feifei.order_ispay"><case value="2"><font color="green">已付款</font></case><default/>未支付</switch></td>
+					<td><switch name="feifei.order_status"><case value="1"><font color="green">已确认</font></case><case value="2">已取消</case><case value="3">无效</case><case value="4">退货</case><default/>未确认</switch></td>
+				</tr>
+				</volist>
+			</tbody>
+			</table>
+		</div>
   </div>
   <!-- -->
   <gt name="totalpages" value="1">

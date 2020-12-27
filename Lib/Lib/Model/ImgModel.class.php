@@ -1,17 +1,18 @@
 <?php
 class ImgModel extends Model {
 	//调用接口
-	public function down_load($url){
+	public function down_load($url, $sid='vod'){
 		if (C('upload_http')) {
-			return $this->down_img($url);
+			return $this->down_img($url, $sid);
 		}else{
 			return $url;
 		}
 	}
 	//远程下载图片
-	public function down_img($url,$sid='vod'){
+	public function down_img($url, $sid='vod'){
 		//是否远程图片
-		if(!strpos($url,'://')){
+		$array = parse_url($url);
+		if(!in_array($array['scheme'],array('http','https','ftp'))){
 			return $url;
 		}
 		//无后缀自动添加
@@ -86,7 +87,11 @@ class ImgModel extends Model {
 		$uppath = './'.C('upload_path').'/'.$module_name.'/';
 		mkdirss($uppath);
 		if (C('upload_thumb')) {
-			$uppath_s = './'.C('upload_path').'/'.$module_name.'-s/';
+			if($file_back == 'thumb'){//小图直接覆盖原图 如头像
+				$uppath_s = './'.C('upload_path').'/'.$module_name.'/';
+			}else{
+				$uppath_s = './'.C('upload_path').'/'.$module_name.'-s/';
+			}
 			mkdirss($uppath_s);
 		}
 		//导入上传组件

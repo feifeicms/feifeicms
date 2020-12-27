@@ -27,7 +27,7 @@ $(document).ready(function(){
   <tr>
     <td class="l pd">{$feifei.tag_name}</td>
     <td class="l ct">{$feifei.tag_count}条</td>
-    <td class="l ct">{$feifei.tag_list}</td>
+    <td class="l ct"><a href="?s=/Admin-Tag-Show-type-{$feifei.tag_list}">{$feifei.tag_list}</a></td>
     <td class="r ct"><a href="{$feifei.tag_url}" title="查看所标识的具体数据">查看</a> <a href="?s=Admin-Tag-Del-id-{:urlencode($feifei['tag_name'])}" onClick="return confirm('确定删除?')"  title="删除用户资料">删除</a></td>
   </tr>
   </tbody>

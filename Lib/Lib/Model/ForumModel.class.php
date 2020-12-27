@@ -36,6 +36,7 @@ class ForumModel extends RelationModel {
 	
 	//检测验证码
 	public function validate_vcode($vcode){
+		session_start();
 		if($_SESSION['verify'] != md5($vcode)){
 			return false;
 		}
@@ -53,7 +54,7 @@ class ForumModel extends RelationModel {
 	
 	//检测是否需要登录才能发表
 	public function validate_uid(){
-		if(C('user_forum')){
+		if( C('user_forum') ){
 			if(!D('User')->ff_islogin()){
 				return false;
 			}
@@ -87,7 +88,7 @@ class ForumModel extends RelationModel {
 	public function ff_find($field = '*', $where, $cache_name=false, $relation=true, $order=false){
 		//md5处理KEY
 		if($cache_name){
-			$cache_name = md5($cache_name);
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
 		}
 		//优先缓存读取数据
 		if( C('cache_page_forum') && $cache_name){

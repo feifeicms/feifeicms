@@ -4,6 +4,16 @@
 <title>导航管理</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel='stylesheet' type='text/css' href='__PUBLIC__/css/admin-style.css' />
+<script charset="utf-8" src="__PUBLIC__/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#nav_select').change(function(){
+		$('#nav_title').val($(this).find("option:selected").html());
+		$('#nav_link').val($(this).val());
+		$('#nav_tips').val($(this).find("option:selected").data('tips'));
+	});
+});
+</script>
 </head>
 <body class="body">
 <include file="./Public/system/header.html" />
@@ -18,7 +28,12 @@
 <div class="add">
   <ul><li class="left">父级导航：</li>
     <li class="right">
-    	<select name="nav_pid" id="nav_pid" style="width:126px;"><option value="0">无</option><volist name="nav_tree" id="feifei"><option value="{$feifei.nav_id}" <eq name="feifei.nav_id" value="$nav_pid">selected</eq>>{$feifei.nav_title}</option></volist></select>
+    	<select name="nav_pid" id="nav_pid" style="width:126px;">
+			<option value="0">无</option>
+			<volist name=":ff_mysql_nav('limit:0;order:nav_oid asc,nav_id;sort:asc')" id="feifei">
+			<option value="{$feifei.nav_id}" <eq name="feifei.nav_id" value="$nav_pid">selected</eq>>{$feifei.nav_title}</option>
+			</volist>
+			</select>
     	<label>不选择将成为一级导航</label>
     </li>
   </ul>
@@ -32,12 +47,22 @@
     <li class="right"><input type="text" name="nav_title" id="nav_title" value="{$nav_title}" maxlength="32" class="w400"></li>
   </ul>
   <ul><li class="left">导航链接：</li>
-    <li class="right"><input type="text" name="nav_link" id="nav_link" value="{$nav_link}" maxlength="255" class="w400"></li>
+    <li class="right">
+		<input type="text" name="nav_link" id="nav_link" value="{$nav_link}" maxlength="255" class="w400">
+		<select name="nav_select" id="nav_select" class="w100">
+		<option value="">内部模块</option>
+		<option value="{:C('site_path')}" data-tips="index">首页</option>
+		<volist name=":ff_mysql_list('limit:0;order:list_oid asc,list_id;sort:asc')" id="feifei">
+		<option value="{:C('site_path')}?s=list-read-id-{$feifei.list_id}{:C('url_html_suffix')}" data-tips="{$feifei.list_dir}">{$feifei.list_name}</option>
+		<volist name="feifei.list_son" id="feifeison"><option value="{:C('site_path')}?s=list-read-id-{$feifeison.list_id}{:C('url_html_suffix')}" data-tips="{$feifeison.list_dir}">├ {$feifeison.list_name}</option></volist>
+		</volist>
+		</select>
+		</li>
   </ul>
-  <ul><li class="left">导航提示：</li>
+  <ul><li class="left">高亮属性：</li>
     <li class="right"><input type="text" name="nav_tips" id="nav_tips" value="{$nav_tips}" maxlength="255" class="w400"></li>
   </ul>
-  <ul><li class="left">导航打开方式：</li>
+  <ul><li class="left">打开方式：</li>
     <li class="right">
     	<label>
       <input type="radio" class="radio" name="nav_target" value="0" <eq name="nav_target" value="0">checked</eq>> 本窗口打开

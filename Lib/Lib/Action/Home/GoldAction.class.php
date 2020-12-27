@@ -1,19 +1,15 @@
 <?php
 class GoldAction extends HomeAction{
-  public function vod(){
+	public function _empty($action){
 		$id = intval($_GET['id']);
 		if ($id < 1) {
 			$this->ajaxReturn(-1,'数据非法！',-1);
 		}
-		$this->show($id, intval($_GET['score']), 'vod');
-  }
-  public function news(){
-		$id = intval($_GET['id']);
-		if ($id < 1) {
+		if( !in_array($action, array('vod','news','special','person')) ){
 			$this->ajaxReturn(-1,'数据非法！',-1);
 		}
-		$this->show($id,intval($_GET['score']),'news');
-  }	
+		$this->show($id,intval($_GET['score']),$action);
+	}	
 	public function show($id, $score, $model='vod'){
 		$rs = D(ucfirst($model));
 		$array = $rs->field(''.$model.'_gold,'.$model.'_golder')->find($id);

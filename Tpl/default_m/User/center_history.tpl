@@ -1,4 +1,4 @@
-<php>$item_vod = ff_mysql_record('sid:1;uid:'.$user_id.';type:1;group:record_did;limit:30;page_is:true;page_id:record;page_p:'.$user_page.';cache_name:default;cache_time:default;order:record_id;sort:desc');
+<php>$item_vod = ff_mysql_record('sid:1;uid:'.$user_id.';type:1;group:record_did;limit:30;page_is:true;page_id:record;page_p:'.$user_page.';order:record_id;sort:desc');
 $page = ff_url_page('user/center',array('action'=>'history','p'=>'FFLINK'),true,'record',4);
 $totalpages = ff_page_count('record', 'totalpages');
 </php><!DOCTYPE html>
@@ -13,7 +13,7 @@ $totalpages = ff_page_count('record', 'totalpages');
 <include file="User:center_nav" />
 <div class="container ff-bg">
 <div class="page-header">
-  <h2><span class="glyphicon glyphicon-menu-right ff-text"></span> 我的观看记录</h2>
+  <h2><span class="glyphicon glyphicon-menu-right text-green"></span> 我的观看记录</h2>
 </div>
 <include file="User:inc_item_record" />
 <gt name="totalpages" value="1">

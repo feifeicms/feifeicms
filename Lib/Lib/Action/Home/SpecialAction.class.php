@@ -1,14 +1,12 @@
 <?php
 class SpecialAction extends HomeAction{
-  // 专题列表
-  public function show(){
-		$params = array();
-		$params['page'] = !empty($_GET['p']) ? intval($_GET['p']) : 1;
-		$params['ajax'] = intval($_GET['ajax']);
-		$params['type'] = htmlspecialchars(urldecode(trim($_REQUEST['type'])));
-		$info = $this->Lable_Special_List($params);
+	private $sid = 3;
+	// 影视搜索 get方式
+	public function search(){
+		$params = ff_param_url();
+		$info = $this->Lable_Search($params, $this->sid);
 		$this->assign($info);
-		$this->display($info['special_skin']);
+		$this->display($info['search_skin']);
   }
 	// 按ID读取影片
   public function read(){
@@ -21,18 +19,29 @@ class SpecialAction extends HomeAction{
 		$detail = $this->get_cache_detail('ename');
 		$this->assign($detail);
 		$this->display($detail['special_skin']);
+	}
+	// more
+	public function _empty($action){
+		if(is_numeric($_GET['id'])){
+	 		$detail = $this->get_cache_detail('id');
+		}else{
+			$detail = $this->get_cache_detail('ename');
+		}
+		$this->assign($detail);
+		$this->display('Special:detail_'.$action);
 	}	
 	// 从数据库获取内容数据
 	private function get_cache_detail($action='id'){
 		//参数
 		$params = array();
-		$params['id'] = intval($_REQUEST['id']);
 		//条件
 		$where = array();
 		$where['special_status'] = array('eq', 1);
 		if($action=='ename'){
+			$params['id'] = htmlspecialchars($_GET['id']);
 			$where['special_ename'] = array('eq', $params['id']);
 		}else{
+			$params['id'] = intval($_REQUEST['id']);
 			$where['special_id'] = array('eq', $params['id']);
 		}
 		//查库

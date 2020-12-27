@@ -5,7 +5,7 @@ class ListAction extends BaseAction{
 		$params = array();
 		$params['field'] = '*';
 		$params['limit'] = false;
-		$params['order'] = 'list_id asc,list_oid';
+		$params['order'] = 'list_oid asc,list_id ';
 		$params['sort'] = 'asc';
 		$infos = D("List")->ff_select_page($params);
 		if($infos){
@@ -15,8 +15,7 @@ class ListAction extends BaseAction{
 		  $this->assign("jumpUrl",'?s=Admin-List-Add');
 			$this->success('暂无分类数据请先添加！');		    
 		}
-  }
-	
+  }	
 	// 添加编辑分类
   public function add(){
 		$cid = intval($_GET['id']);

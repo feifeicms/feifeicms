@@ -67,11 +67,11 @@ $(".form-user-register").on('submit',function(e){
   <a href="{:ff_url('user/register')}">欢迎加入{$site_name}</a>
 </h2>
 <h5 class="text-center">
-  <a class="ff-text" href="{$root}">返回首页</a>
-  <a class="ff-text" href="{:ff_url('user/forget')}">忘记密码</a>
-  <a class="ff-text" href="{:ff_url('user/login')}">已有帐号登录</a>
+  <a class="text-green" href="{$root}">返回首页</a>
+  <a class="text-green" href="{:ff_url('user/forget')}">忘记密码</a>
+  <a class="text-green" href="{:ff_url('user/login')}">已有帐号登录</a>
 </h5>
-<div class="clearfix ff-clearfix"></div>
+<div class="clearfix mb-1"></div>
 <h4 class="text-muted">
   创建新账号
 </h4>
@@ -85,7 +85,7 @@ $(".form-user-register").on('submit',function(e){
 <div class="form-group">
   <label for="user_email" class="col-md-3 control-label">邮箱</label>
   <div class="col-md-8">
-    <input class="form-control" name="user_email" id="user_email" type="text" placeholder="常用邮箱 test@feifeicms.com" required>
+    <input class="form-control" name="user_email" id="user_email" type="text" placeholder="常用邮箱 test@feifeicms.org" required>
   </div>
 </div>
 <div class="form-group">

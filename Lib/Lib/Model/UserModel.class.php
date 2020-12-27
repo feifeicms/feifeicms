@@ -9,9 +9,9 @@ class UserModel extends RelationModel {
 		array('user_name', '', '用户呢称被占用，请重新填写', 2, 'unique',3),
 		/* 验证邮箱 */
 		array('user_email', 'email', '邮箱格式不正确', 0,'',3),
-		array('user_email', '', '邮箱被占用，请重新填写', 0, 'unique',3),
+		array('user_email', '', '邮箱被占用，请重新填写', 2, 'unique',3),
 		/* 验证密码 */
-		array('user_pwd_re', 'user_pwd', '两次密码输入不一样', 2, 'confirm'), //两次密码输入不一样！
+		array('user_pwd_re', 'user_pwd', '两次密码输入不一样', 2, 'confirm'),
 	);
 	
 	protected $_auto = array(
@@ -59,8 +59,11 @@ class UserModel extends RelationModel {
 	
 	//过滤脏话与安全
 	public function auto_user_name($str){
-		$array = explode('|',C('user_replace'));
-		return str_replace($array, '***', remove_xss(h($str)) );
+		if($str){
+			$array = explode('|',C('user_replace'));
+			return str_replace($array, '***', remove_xss(h($str)) );
+		}
+		return false;
 	}
 	
 	//密码处理
@@ -75,7 +78,13 @@ class UserModel extends RelationModel {
 	//登录成功返回用户ID
 	public function ff_login($post){
 		$where = array();
-		$where['user_email'] = array('eq', htmlspecialchars(trim($post['user_email'])));
+		//用户名与邮箱登录
+		if(filter_var($post['user_email'], FILTER_VALIDATE_EMAIL)){
+			$where['user_email'] = array('eq', htmlspecialchars(trim($post['user_email'])));
+		}else{
+			$where['user_name'] = array('eq', htmlspecialchars(trim($post['user_email'])));
+		}
+		//查库
 		$info = $this->field('user_id,user_name,user_pwd,user_email,user_status')->where($where)->find();
 		if(!$info){
 			$this->error = '用户资料不存在。';
@@ -104,6 +113,7 @@ class UserModel extends RelationModel {
 	//注销
 	public function ff_logout(){
 		cookie('ff_user', NULL);
+		session_start();
 		$_SESSION['ff_user_sign'] = NULL;
 	}
 	
@@ -122,6 +132,7 @@ class UserModel extends RelationModel {
 		// 写入客户端，不要记录本次登录的IP
 		cookie('ff_user', $encrypt, $expire);
 		// 写入服务端，需加上本次登录的IP
+		session_start();
 		$_SESSION['ff_user_sign'] = sha1( $encrypt.$data['user_logip'] );
 	}
 	
@@ -133,6 +144,7 @@ class UserModel extends RelationModel {
 			// cookie user信息
 			$user_cookie = explode('$feifeicms$', ff_decrypt($encrypt));
 			// session 对比
+			session_start();
 			if(sha1($encrypt.get_client_ip()) == $_SESSION['ff_user_sign']){
 				return intval($user_cookie[0]);
 			}
@@ -148,20 +160,6 @@ class UserModel extends RelationModel {
 			$this->ff_logout();
 		}
 		return 0;
-	}
-	
-	//从cookie获取用户ID 用户name
-	public function ff_info_cookie(){
-		$encrypt = cookie('ff_user');
-		if($encrypt){
-			$user_cookie = explode('$feifeicms$', ff_decrypt($encrypt));
-			$array = array();
-			$array['user_id'] = intval($user_cookie[0]);
-			$array['user_name'] = htmlspecialchars($user_cookie[1]);
-			return $array;
-		}else{
-			return false;
-		}
 	}
 	
 	//从数据库获取用户完整信息
@@ -208,7 +206,7 @@ class UserModel extends RelationModel {
 	public function ff_find($field = '*', $where, $cache_name=false, $relation=true, $order=false){
 		//md5处理KEY
 		if($cache_name){
-			$cache_name = md5($cache_name);
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
 		}
 		//优先缓存读取数据
 		if( C('cache_page_user') && $cache_name){
@@ -271,7 +269,7 @@ class UserModel extends RelationModel {
 			// 使用GET全局变量传递分页参数 gx_page_default
 			$_GET['ff_page_'.$params['page_id']] = $page;
 		}else{
-			$page['currentpage'] = false;
+			$page['currentpage'] = NULL;
 		}	
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->page($page['currentpage'])->order(trim($params['order'].' '.$params['sort']))->select();
 		//dump($this->getLastSql());

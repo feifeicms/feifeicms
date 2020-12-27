@@ -1,13 +1,17 @@
 <?php
 class ScenarioAction extends HomeAction{
-	//分集剧情频道
-  public function index(){
-		$info = $this->label();
+	private $sid = 7;
+	public function tags(){
+		echo('not tags');
+	}	
+	public function search(){
+		$params = ff_param_url();
+		$info = $this->Lable_Search($params, $this->sid);
 		$this->assign($info);
-		$this->display('Scenario:index');
-  }
+		$this->display($info['search_skin']);
+  }	
 	// 按ID读取影片分集
-  public function detail(){
+  public function read(){
 		$detail = $this->Lable_Vod_Scenario($this->get_cache_detail('id'), array('id'=>intval($_GET['id']), 'pid'=>intval($_GET['pid'])));
 		$this->assign($detail);
 		$this->display($detail['scenario_skin']);
@@ -28,13 +32,7 @@ class ScenarioAction extends HomeAction{
 		}
 		$this->assign($detail);
 		$this->display('Scenario:'.$action);
-	}
-	// 剧情普通标签
-	private function label(){
-		$get = array();
-		$get['scenario_page'] = !empty($_GET['p']) ? intval($_GET['p']) : 1;
-		return $get;
-	}
+	}	
 	// 从数据库获取内容数据
 	private function get_cache_detail($action='id'){
 		//参数

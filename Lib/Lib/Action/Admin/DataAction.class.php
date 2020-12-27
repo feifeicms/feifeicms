@@ -1,16 +1,32 @@
 <?php
 class DataAction extends BaseAction{
-	// 数据库备份展示	
-  public function show(){
+	// 数据库展示	
+    public function show(){
 		//$rs = new Model();
-		$list = M()->query('SHOW TABLES FROM '.C('db_name'));
-		$tablearr = array();
-		foreach ($list as $key => $val) {
-			$tablearr[$key] = current($val);
+		if($_GET['type'] == 'repair'){
+			$list = M()->query("select table_name,data_free,table_rows,data_length,index_length from information_schema.tables where table_schema='".C('db_name')."'");
+			$this->assign('list_table', $list);
+			$this->display('./Public/system/data_repair.html');
+		}else{
+			$list = M()->query('SHOW TABLES FROM '.C('db_name'));
+			$tablearr = array();
+			foreach ($list as $key => $val) {
+				$tablearr[$key] = current($val);
+			}
+			$this->assign('list_table',$tablearr);
+			$this->display('./Public/system/data_show.html');
 		}
-		$this->assign('list_table',$tablearr);
-		$this->display('./Public/system/data_show.html');
-  }
+    }
+	//数据表的修复与优化
+	public function repair(){
+		if(empty($_POST['ids'])){
+			$this->error('请选择需要操作的数据表！');
+		}
+		$tables = implode(',',$_POST['ids']);
+		M()->query("repair table ".$tables);
+		M()->query("optimize table ".$tables);
+		$this->success('操作完成！');
+	}
 	//处理数据库备份
 	public function insert(){
 		if(empty($_POST['ids'])){
@@ -44,7 +60,7 @@ class DataAction extends BaseAction{
 		}
 		$this->assign("jumpUrl",'?s=Admin-Data-Show');
 		$this->success('数据库分卷备份已完成,共分成'.$p.'个sql文件存放！');
-  }
+    }
 	//生成SQL备份语句
 	public function insertsql($table, $row){
 		$sql = "INSERT INTO `{$table}` VALUES ("; 
@@ -56,7 +72,7 @@ class DataAction extends BaseAction{
 		return $sql;
 	}
 	//展示还原
-  public function restore(){
+    public function restore(){
 		$filepath = DATA_PATH.'_bak/*.sql';
 		$filearr = glob($filepath);
 		if (!empty($filearr)) {
@@ -70,12 +86,12 @@ class DataAction extends BaseAction{
 				$restore[$k]['path'] = DATA_PATH.'_bak/';
 			}
 			$this->assign('list_restore',$restore);
-      $this->display('./Public/system/data_restore.html');
+            $this->display('./Public/system/data_restore.html');
 		}else{
 			$this->assign("jumpUrl",'?s=Admin-Data-Show');
 			$this->error('没有检测到备份文件,请先备份或上传备份文件到'.DATA_PATH.'_bak/');
 		}
-  }
+    }
 	//导入还原
 	public function back(){
 		$rs = new Model();
@@ -97,9 +113,13 @@ class DataAction extends BaseAction{
 		}
 		
 	}
+    //文件名过滤
+    private function file_id($file_name){
+        return str_replace(array('..','/'), '', urldecode(trim($file_name)));
+    }
 	//下载还原
 	public function down(){
-		$filepath = DATA_PATH.'_bak/'.$_GET['id'];
+        $filepath = DATA_PATH.'_bak/'.$this->file_id($_GET['id']);
 		if (file_exists($filepath)) {
 			$filename = $filename ? $filename : basename($filepath);
 			$filetype = trim(substr(strrchr($filename, '.'), 1));
@@ -118,23 +138,23 @@ class DataAction extends BaseAction{
 	}
 	//删除分卷文件
 	public function del(){
-		$filename = trim($_GET['id']);
+		$filename = $this->file_id($_GET['id']);
 		@unlink(DATA_PATH.'_bak/'.$filename);
 		$this->success($filename.'已经删除！');
 	}
 	//删除所有分卷文件
 	public function delall(){
 		foreach($_POST['ids'] as $value){
-			@unlink(DATA_PATH.'_bak/'.$value);
+			@unlink(DATA_PATH.'_bak/'.$this->file_id($value));
 		}
 		$this->success('批量删除分卷文件成功！');
 	}
 	//展示高级SQL
-  public function sql(){
+    public function sql(){
 		$this->display('./Public/system/data_sql.html');
-  }
+    }
 	//执行SQL语句
-  public function upsql(){
+    public function upsql(){
 		$sql = trim($_POST['sql']);
 		if (empty($sql)) {
 			$this->error('SQL语句不能为空！');
@@ -160,7 +180,7 @@ class DataAction extends BaseAction{
 		$this->assign('list_table',$tablearr);	
 		$this->display('./Public/system/data_replace.html');
   }	
-	//Ajax展示字段信息
+  //Ajax展示字段信息
   public function ajaxfields(){
 		$id = ucfirst(str_replace(C('db_prefix'),'',$_GET['id']));
 		if (!empty($id)) {
@@ -189,8 +209,8 @@ class DataAction extends BaseAction{
 		if(empty($_POST['rpstring'])){
 			$this->error("请指定要被替换内容！");
 		}
-		$exptable = ucfirst(str_replace(C('db_prefix'),'',$_POST['exptable']));
-		$rs = D($exptable);
+		$exptable = str_replace(C('db_prefix'),'',$_POST['exptable']);
+		$rs = D(ucfirst($exptable));
 		$exptable = C('db_prefix').$exptable;//表
 		$rpfield = trim($_POST['rpfield']);//字段
 		$rpstring = $_POST['rpstring'];//被替换的

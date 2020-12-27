@@ -1,29 +1,32 @@
-<php>$item_list = ff_mysql_forum('pid:'.$forum_id.';limit:10;status:1;page_is:true;page_id:forum;page_p:'.$forum_page.';cache_name:default;cache_time:default;order:forum_addtime;sort:desc');
+<php>$item_list = ff_mysql_forum('pid:'.$forum_id.';limit:10;page_is:true;page_id:forum;page_p:'.$forum_page.';cache_name:default;cache_time:default;order:forum_addtime;sort:desc');
 $page_array = $_GET['ff_page_forum'];
-$page_info = ff_url_page('forum/detail',array('id'=>$forum_id,'p'=>'FFLINK'), true, 'forum', 4);
-</php><!DOCTYPE html>
+$page_info = ff_url_page('forum/read',array('id'=>$forum_id,'p'=>'FFLINK'), true, 'forum', 4);
+if($forum_cid){
+	$special = reset(ff_mysql_special('ids:'.$forum_cid.';limit:1;cache_name:default;cache_time:default;order:special_id;sort:desc'));
+}</php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:forum_detail_special" />
+<include file="./Tpl/base/bootstrap3/inc_header" />
+<include file="./Tpl/base/seo/forum_detail_special" />
 </head>
-<body class="forum-gusetbook-detail">
-<include file="Block:header" />
+<body class="forum-detail forum-detail-special">
+<include file="BlockTheme:header" />
 <div class="container ff-bg ff-forum" data-type="{$Think.config.forum_type}">
 <div class="page-header">
-  <h2>
-    <span class="glyphicon glyphicon-comment ff-text"></span>
-    <a class="ff-text" href="{:ff_url('forum/special', array('cid'=>$forum_cid), true)}">专题评论</a>
-    <a href="{:ff_url('forum/detail', array('id'=>$forum_id), true)}">评论主题</a>
+  <h2 class="text-ellipsis">
+    <span class="glyphicon glyphicon-comment text-green"></span>
+    <a href="{:ff_url('forum/read', array('id'=>$forum_id), true)}">{$special.special_name|msubstr=0,36,true} 评论</a>
+		<label class="pull-right hidden-xs hidden-sm"><include file="./Tpl/base/bootstrap3/inc_share" /></label>
   </h2>
 </div>
 <!-- -->
 <p class="content">
-  {$forum_content|htmlspecialchars}<br>
+  {$forum_content|htmlspecialchars|nb}
+	<a class="text-green" href="{:ff_url('special/forum', array('id'=>$forum_cid), true)}">@{$special.special_name}</a>
 </p>
 <p class="text-right design">
 	<small class="text-muted">
-  <a class="ff-text" href="{:ff_url('user/index',array('id'=>$user_id),true)}" target="_blank">{$user_name|htmlspecialchars}</a>
+  <a class="text-green" href="{:ff_url('user/index',array('id'=>$user_id),true)}" target="_blank">{$user_name|htmlspecialchars|nb}</a>
   {$forum_addtime|date='Y-m-d',###}
   </small>
 </p>
@@ -34,17 +37,21 @@ $page_info = ff_url_page('forum/detail',array('id'=>$forum_id,'p'=>'FFLINK'), tr
   <a class="btn btn-default ff-updown-set" href="javascript:;" data-id="{$forum_id}" data-module="forum" data-type="down" data-toggle="tooltip" data-placement="top" title="反对">
     <span class="glyphicon glyphicon-thumbs-up"></span> 踩（<span class="ff-updown-val">{$forum_down}</span>）
   </a>
+	<a class="btn btn-default ff-updown-set" href="{:ff_url('special/read',array('id'=>$forum_cid),true)}">
+	<span class="glyphicon glyphicon-link text-green"></span> 阅读
+	</a>
 </p>
 <!-- -->
 <div class="page-header">
-  <h2><span class="glyphicon glyphicon-comment ff-text"></span> 发表您对此评论的看法</h2>
+  <h2><span class="glyphicon glyphicon-comment text-green"></span> 发表您对此评论的看法</h2>
 </div>
 <!--发表评论后刷新网页 -->
 <div class="ff-forum-reload">
-	<include file="Base:forum_post" />
+	<assign name="forum_pid" value="$forum_id" />
+	<include file="./Tpl/base/bootstrap3/forum_post" />
 </div>
 <div class="ff-forum-item">
-	<include file="Base:forum_item" />
+	<include file="./Tpl/base/bootstrap3/forum_item" />
 </div>
 <!-- -->
 <gt name="page_array.totalpages" value="1">
@@ -55,18 +62,18 @@ $page_info = ff_url_page('forum/detail',array('id'=>$forum_id,'p'=>'FFLINK'), tr
     </ul>
     <ul class="pager visible-xs visible-sm">
       <gt name="forum_page" value="1">
-        <li><a id="ff-prev" href="{:ff_url('forum/detail', array('id'=>$forum_id,'p'=>($forum_page-1)), true)}">上一页</a></li>
+        <li><a id="ff-prev" href="{:ff_url('forum/read', array('id'=>$forum_id,'p'=>($forum_page-1)), true)}">上一页</a></li>
       </gt>
       <lt name="forum_page" value="$page_array['totalpages']">
-        <li><a id="ff-next" href="{:ff_url('forum/detail', array('id'=>$forum_id,'p'=>($forum_page+1)), true)}">下一页</a></li>
+        <li><a id="ff-next" href="{:ff_url('forum/read', array('id'=>$forum_id,'p'=>($forum_page+1)), true)}">下一页</a></li>
       </lt>
     </ul> 
   </div>
 </gt>
 </div><!--container end -->
-<div class="clearfix ff-clearfix"></div>
+<div class="clearfix mb-2"></div>
 <div class="container ff-bg">
-  <include file="Block:footer" />
+  <include file="BlockTheme:footer" />
 </div>
 </body>
 </html>

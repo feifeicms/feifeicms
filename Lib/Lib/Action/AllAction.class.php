@@ -5,8 +5,55 @@ class AllAction extends Action{
   public function _initialize(){
     header("Content-Type:text/html; charset=utf-8");
   }
+	// 栏目分类
+	public function Lable_List($params, $array){
+		$array['list_page'] = $params['page'];
+		$array['list_ajax'] = $params['ajax'];
+		if (empty($array['list_skin'])) {
+			$array['list_skin'] = 'list';
+		}
+		if($params['ajax']){
+			$array['list_skin'] .= '_ajax';
+		}
+		$array['site_sid'] = $array['list_sid'];
+		$array['list_skin'] = ucfirst(ff_sid2module($array['list_sid'])).':'.$array['list_skin'];
+		return $array;
+  }
+	// 栏目筛选
+	public function Lable_Select($params, $array){
+		foreach($params as $key=>$value){
+			if(in_array($key, array('id','cid','sid','type','ename','area','year','star','state','ispay','gender','profession','letter','language','order','limit','page','ajax')) ){
+				$array['select_'.$key] = $value;
+			}
+		}
+		if (empty($array['list_skin_type'])) {
+			$array['list_skin_type'] = 'type';
+		}
+		if($params['ajax']){
+			$array['list_skin_type'] .= '_ajax';
+		}
+		$array['site_sid'] = $array['list_sid'];
+		$array['list_skin_type'] = ucfirst(ff_sid2module($array['list_sid'])).':'.$array['list_skin_type'];
+		return $array;
+  }
+	// 搜索定义
+	public function Lable_Search($params, $sid = 1){
+		$array = array();
+		foreach($params as $key=>$value){
+			if(in_array($key, array('wd','name','ename','title','actor','director','writer','play','inputer','limit','page','order','ajax')) ){
+				$array['search_'.$key] = $value;
+			}
+		}
+		$array['search_skin'] = 'search';
+		if($params['ajax']){
+			$array['search_skin'] .= '_ajax';
+		}
+		$array['search_skin'] = ucfirst(ff_sid2module($sid)).':'.$array['search_skin'];
+		$array['site_sid'] = $sid;
+		return $array;
+  }	
 	// 标签话题
-	public function Lable_Tags($params, $module = 'vod'){
+	public function Lable_Tags($params, $sid = 1){
 		$params = ff_param_url();
 		foreach($params as $key=>$value){
 			if(in_array($key, array('name','id','type','tag','cid','ename','page','ajax')) ){
@@ -18,58 +65,9 @@ class AllAction extends Action{
 		if($params['ajax']){
 			$array['tag_skin'] .= '_ajax';
 		}
-		$array['tag_skin'] = ucfirst($module).":".$array['tag_skin'];
-		$array['site_sid'] = 4;
+		$array['tag_skin'] = ucfirst(ff_sid2module($sid)).":".$array['tag_skin'];
 		return $array;
-	}	
-	// 影视多分类筛选变量定义
-	public function Lable_Vod_Type($params, $array){
-		foreach($params as $key=>$value){
-			if(in_array($key, array('id','type','area','year','star','state','ispay','order','limit','letter','language','page','ajax')) ){
-				$array['type_'.$key] = $value;
-			}
-		}
-		//模板名称定义
-		if (empty($array['list_skin_type'])) {
-			$array['list_skin_type'] = 'type';
-		}
-		if($params['ajax']){
-			$array['list_skin_type'] .= '_ajax';
-		}
-		$array['list_skin_type'] = 'Vod:'.$array['list_skin_type'];
-		$array['site_sid'] = 1;
-		return $array;
-  }
-	// 影视搜索变量定义
-	public function Lable_Vod_Search($params){
-		$array = array();
-		foreach($params as $key=>$value){
-			if(in_array($key, array('wd','name','title','actor','director','play','inputer','order','limit','page','ajax')) ){
-				$array['search_'.$key] = $value;
-			}
-		}
-		$array['search_skin'] = 'search';
-		if($params['ajax']){
-			$array['search_skin'] .= '_ajax';
-		}
-		$array['search_skin'] = 'Vod:'.$array['search_skin'];
-		$array['site_sid'] = 1;
-		return $array;
-  }
-	// 影视栏目页变量定义
-	public function Lable_Vod_List($params, $array){
-		$array['list_page'] = $params['page'];
-		$array['list_ajax'] = $params['ajax'];
-		if (empty($array['list_skin'])) {
-			$array['list_skin'] = 'list';
-		}
-		if($params['ajax']){
-			$array['list_skin'] .= '_ajax';
-		}
-		$array['list_skin'] = 'Vod:'.$array['list_skin'];
-		$array['site_sid'] = 1;
-		return $array;
-  }
+	}
 	/*****************影视内容,播放页公用变量定义******************************
 	* @$array/具体的内容信息
 	* @$array_play 为解析播放页
@@ -101,9 +99,11 @@ class AllAction extends Action{
 		$array['vod_hits_week'] = ff_get_hits('vod','vod_hits_week',$array,C('url_html_play'));
 		$array['vod_hits_day'] = ff_get_hits('vod','vod_hits_day',$array,C('url_html_play'));
 		// 播放器相关默认配置
+		$array['play_id'] = $array_play['id'];
 		$array['play_sid'] = $array_play['sid'];
 		$array['play_pid'] = $array_play['pid'];
-		$array['play_buffer'] = C('play_playad');
+		$array['play_buffer'] = C('play_buffer');
+		$array['play_pause'] = C('play_pause');
 		$array['play_second'] = intval(C('play_second'));
 		$array['play_jiexi'] = trim(C('play_jiexi'));
 		// 通过sid定义到当前播放器组的相关变量
@@ -152,7 +152,7 @@ class AllAction extends Action{
 		}
 		//播放器调用
 		if($array['play_ispay'] || $array['vod_price']){//付费
-			$array['vod_player'] = '<div id="cms-player-vip"><div class="cms-player-box">VIP影片，需验证观看权限，请稍等。</div><iframe class="embed-responsive-item cms-player-iframe" src="'.ff_url('vod/vip',array('action'=>'play','id'=>$array['vod_id'],'sid'=>$array['play_sid'],'pid'=>$array['play_pid'],true)).'" width="100%" height="100%" frameborder="0"></iframe></div>';
+			$array['vod_player'] = '<div id="cms-player-vip"><div class="cms-player-box">VIP影片，需验证观看权限，请稍等。</div><iframe class="embed-responsive-item cms-player-iframe" src="'.ff_url('vod/vip',array('action'=>'play','id'=>$array['vod_id'],'sid'=>$array['play_sid'],'pid'=>$array['play_pid'],true)).'" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen="true" allowtransparency="true"></iframe></div>';
 		}else{//免费
 			//copyright 版权处理
 			if($array['list_copyright'] > 0){
@@ -178,7 +178,8 @@ class AllAction extends Action{
 		$vip['play_sid'] = $array_play['sid'];
 		$vip['play_pid'] = $array_play['pid'];
 		$vip['play_status'] = 200;
-		$vip['play_buffer'] = C('play_playad');
+		$vip['play_buffer'] = C('play_buffer');
+		$vip['play_pause'] = C('play_pause');
 		$vip['play_second'] = intval(C('play_second'));
 		$vip['play_jiexi'] = trim(C('play_jiexi'));
 		$vip['play_copygiht'] = 0;
@@ -244,54 +245,6 @@ class AllAction extends Action{
 		$array['site_sid'] = 7;
 		return $array;
   }
-	// 文章多分类筛选变量定义
-	public function Lable_News_Type($params, $array){
-		foreach($params as $key=>$value){
-			if(in_array($key, array('id','type','limit','order','page','ajax')) ){
-				$array['type_'.$key] = $value;
-			}
-		}
-		//模板名称定义
-		if (empty($array['list_skin_type'])) {
-			$array['list_skin_type'] = 'type';
-		}
-		if($params['ajax']){
-			$array['list_skin_type'] .= '_ajax';
-		}
-		$array['list_skin_type'] = 'News:'.$array['list_skin_type'];
-		$array['site_sid'] = 2;
-		return $array;
-  }
-	// 文章搜索变量定义
-	public function Lable_News_Search($params){
-		$array = array();
-		foreach($params as $key=>$value){
-			if(in_array($key, array('wd','name','title','remark','order','limit','page','ajax')) ){
-				$array['search_'.$key] = $value;
-			}
-		}
-		$array['search_skin'] = 'search';
-		if($params['ajax']){
-			$array['search_skin'] .= '_ajax';
-		}
-		$array['search_skin'] = 'News:'.$array['search_skin'];
-		$array['site_sid'] = 2;
-		return $array;
-  }
-	// 文章分类页变量定义
-	public function Lable_News_List($params, $array){
-		$array['list_page'] = $params['page'];
-		$array['list_ajax'] = $params['ajax'];
-		if (empty($array['list_skin'])) {
-			$array['list_skin'] = 'list';
-		}
-		if($params['ajax']){
-			$array['list_skin'] .= '_ajax';
-		}
-		$array['list_skin'] = 'News:'.$array['list_skin'];
-		$array['site_sid'] = 2;
-		return $array;
-  }
 	//资讯内容页变量定义
 	public function Lable_News_Read($params, $array){
 		$array['news_hits_insert'] = ff_get_hits('news','insert',$array);
@@ -300,7 +253,7 @@ class AllAction extends Action{
 		$array['news_hits_week'] = ff_get_hits('news','news_hits_week',$array);
 		$array['news_hits_day'] = ff_get_hits('news','news_hits_day',$array);
 		//正则分割是否有分页
-		$array_content = preg_split("/<div style=\"page-break-after:always\">([\s\S]*?)<\/div>/", $array['news_content']);
+		$array_content = preg_split("/<div style=\"page-break-after([\s\S]*?)\">([\s\S]*?)<\/div>/", $array['news_content']);
 		$array['news_page'] = $params['page'];
 		$array['news_page_count'] = count($array_content);
 		$array['news_content'] = $array_content[$params['page']-1];
@@ -315,20 +268,8 @@ class AllAction extends Action{
 		$array['site_sid'] = 2;
 		return $array;
 	}
-	//专题列表页变量定义
-	public function Lable_Special_List($params){
-		$array = array();
-		$array['special_type'] = $params['type'];
-		$array['special_page'] = $params['page'];
-		$array['special_skin'] = 'Special:list';
-		if($params['ajax']){
-			$array['special_skin'] .= '_ajax';
-		}
-		$array['site_sid'] = 3;
-		return $array;
-  }
 	//专题内容页变量定义
-	public function Lable_Special_Read($array,$array_play = false){
+	public function Lable_Special_Read($array){
 		$array_ids = array();$where = array();
 		$array['special_skin'] = !empty($array['special_skin']) ? 'Special:'.$array['special_skin'] : 'Special:detail';
 		$array['special_hits_insert'] = ff_get_hits('special','insert',$array);
@@ -339,7 +280,13 @@ class AllAction extends Action{
 		$array['site_sid'] = 3;
 		return $array;
 	}
-	//讨论模块普通变量定义
+	//留言详情页解析
+	public function Lable_Guestbook_Read($array){
+		$array['guestbook_skin'] = 'Guestbook:detail';
+		$array['site_sid'] = 5;
+		return $array;
+  }	
+	//评论详情页解析
 	public function Lable_Forum($params){
 		$array = array();
 		foreach($params as $key=>$value){
@@ -347,16 +294,30 @@ class AllAction extends Action{
 				$array['forum_'.$key] = $value;
 			}
 		}
-		$array['forum_seo_title'] = C('forum_seo_title');
-		$array['forum_seo_keywords'] = C('forum_seo_keywords');
-		$array['forum_seo_description'] = C('forum_seo_description');
+		$array['site_sid'] = 6;
+		return $array;
+  }	
+	public function Lable_Forum_Read($array){
+		$array['forum_skin'] = 'Forum:detail_'.ff_sid2module($array['forum_sid']);
 		$array['site_sid'] = 6;
 		return $array;
   }
-	//评论详情页解析
-	public function Lable_Forum_Detail($params, $array){
-		$array['forum_skin'] = 'Forum:detail_'.ff_sid2module($array['forum_sid']);
-		$array['site_sid'] = 6;
+	//人物详情页解析
+	public function Lable_Person_Read($array, $sid=8){
+		$array['person_hits_insert'] = ff_get_hits('person','insert',$array);
+		$array['person_hits_all'] = ff_get_hits('person','person_hits',$array);
+		$array['person_hits_month'] = ff_get_hits('person','person_hits_month',$array);
+		$array['person_hits_week'] = ff_get_hits('person','person_hits_week',$array);
+		$array['person_hits_day'] = ff_get_hits('person','person_hits_day',$array);
+		//模板路径
+		if(empty($array['person_skin'])){
+			$array['person_skin'] = !empty($array['list_skin_detail']) ? $array['list_skin_detail'] : 'detail';
+		}
+		if($params['ajax']){
+			$array['person_skin'] .= '_ajax';
+		}
+		$array['person_skin'] = ucfirst(ff_sid2module($sid)).':'.$array['person_skin'];
+		$array['site_sid'] = $sid;
 		return $array;
   }
 	//首页标签定义
@@ -389,10 +350,190 @@ class AllAction extends Action{
 		$array['site_icp'] = C('site_icp');
 		$array['site_hot'] = ff_site_hot();	
 		$array['site_sid'] = intval(ff_module2sid($array['model']));
-		$user = D('User')->ff_info_cookie();
+		$user = ff_user_cookie();
 		$array['site_user_id'] = $user['user_id'];
-		$array['site_user_name'] = $user['user_name'];	
+		$array['site_user_name'] = $user['user_name'];
+		unset($user);
 		return $array;		
 	}
+	public function CreateIndex(){
+		$this->assign($this->Lable_Index());
+		@$this->buildHtml("index",'./','Home:index');
+	}
+	public function CreateCategory($nextkey=0,$page=1,$cid=0){
+		$params = array();
+		$params['field'] = '*';
+		$params['limit'] = false;
+		$params['order'] = 'list_id';
+		$params['sort'] = 'asc';
+		$where = array();
+		$where['list_sid'] = array('in','1,2');
+		if($cid){ 
+			$where['list_id'] = array('eq',$cid);
+		}
+		$infos = D("List")->ff_select_page($params,$where);
+		//过滤数据(不需要或断点记录已生成)
+		for($i=0; $i<$nextkey; $i++){
+			unset($infos[$i]);
+		}
+		//任务开始
+		ff_create_statusSet('category','ing');
+		foreach($infos as $key=>$value){
+			F('_create/category', array('nextKey'=>$key,'nextPage'=>$page,'nextCid'=>$cid) );//断点记录
+			$totalpages = $this->CreateCategoryHtml($value, $page);
+			for($i=($page+1);$i<=$totalpages;$i++){
+				if(ff_create_statusGet('category')=='ing'){
+					F('_create/category', array('nextKey'=>$key,'nextPage'=>$i,'nextCid'=>$cid) );//断点记录
+					$this->CreateCategoryHtml($value, $i);//生成网页
+				}else{
+					return false;//检查任务是否取消break;
+				}
+			}
+		}
+		ff_create_statusSet('category','end');//任务完成
+		F('_create/category', NULL);//清除断点记录
+	}
+	public function CreateCategoryHtml($info, $page){
+		ob_start();
+		$_GET["ff_page_list"]["totalpages"] = 1;//初始化总页数
+		$path = ff_url_build('list/read', array('id'=>$info['list_id'], 'list_dir'=>$info['list_dir'], 'p'=>$page));//保存目录
+		$info = $this->Lable_List(array('page'=>$page), $info);
+		$this->assign($info);
+		@$this->buildHtml(ltrim($path,C('site_path')), './', $info['list_skin']);
+		ob_end_flush();
+		unset($info);
+		return intval($_GET["ff_page_list"]["totalpages"]);
+		//echo '分类ID（'.$info['list_id'].'）<a href="'.$path.C('html_file_suffix').'" target="_blank">'.$path.C('html_file_suffix').'</a> OK>';
+		//ob_flush();flush();
+	}
+	public function CreateVod($nextkey=0,$page=1,$cid=0,$hour=0){
+		$where = array();//条件
+		$where['vod_status'] = array('eq',1);
+		if($cid){ $where['vod_cid'] = array('eq',$cid); }
+		if($hour){ $where['vod_addtime'] = array('gt',time()-$hour*3600); }
+		$totalpages = ceil(D('Vod')->where($where)->count('vod_id')/30);
+		ff_create_statusSet('vod','ing');//任务开始
+		for($i=$page; $i<=$totalpages; $i++){//减小内存占用，循环查询
+			$params = array();
+			$params['field'] = 'vod_id';
+			$params['limit'] = 30;
+			$params['order'] = 'vod_id';
+			$params['sort'] = 'desc';
+			$params['page_is'] = true;
+			$params['page_id'] = 'item';
+			$params['page_p'] = $i;
+			$infos = D('Vod')->ff_select_page($params, $where);
+			for($n=0; $n<$nextkey; $n++){
+				unset($infos[$n]);
+			}
+			foreach($infos as $key=>$value){
+				if(ff_create_statusGet('vod') == 'ing'){
+					F('_create/vod', array('nextKey'=>$key,'nextPage'=>$i,'nextCid'=>$cid,'nextHour'=>$hour,'totalPages'=>$totalpages) );//断点记录
+					$this->CreateVodDb($value['vod_id']);//生成网页
+				}else{
+					return false;
+				}
+			}
+		}
+		unset($infos);
+		ff_create_statusSet('vod','end');//任务完成
+		F('_create/vod', NULL);//清除断点
+	}
+	public function CreateVodDb($vod_id,$return=false){
+		$where = array();
+		$where['vod_id'] = array('eq', $vod_id);
+		$where['vod_status'] = array('eq', 1);
+		if( $info = D('Vod')->ff_find('*', $where, 'cache_page_vod_'.$vod_id, true) ){
+			if($return){
+				return $info;
+			}else{
+				return $this->CreateVodHtml($info);
+			}
+		}else{
+			return NULL;
+		}
+	}
+	public function CreateVodHtml($info){
+		ob_start();
+		$path = ff_url_build('vod/read', array('list_id'=>$info['list_id'],'list_dir'=>$info['list_dir'],'pinyin'=>$info['vod_ename'],'id'=>$info['vod_id']));
+		$info = $this->Lable_Vod_Read($info);
+		$this->assign($info);
+		@$this->buildHtml(ltrim($path,C('site_path')), './', $info['vod_skin_detail']);
+		//是否生成播放页
+		if(C('url_vod_play')){
+			foreach($info["vod_play_list"] as $sid=>$valueS){
+				foreach($valueS['son'] as $pid=>$valueJ){
+					$path = ff_url_build('vod/play', array('list_id'=>$info['list_id'],'list_dir'=>$info['list_dir'],'pinyin'=>$info['vod_ename'],'id'=>$info['vod_id'],'sid'=>$sid,'pid'=>($pid+1)));
+					$this->assign($this->Lable_Vod_Play($info, array('id'=>$info['vod_id'], 'sid'=>$sid, 'pid'=>($pid+1))));
+					@$this->buildHtml(ltrim($path,C('site_path')), './', $info['vod_skin_play']);
+				}
+			}
+		}
+		ob_end_flush();
+		unset($info);
+	}
+	public function CreateNews($nextkey=0,$page=1,$cid=0,$hour=0){
+		$where = array();
+		$where['news_status'] = array('eq',1);
+		if($cid){ $where['news_cid'] = array('eq',$cid); }
+		if($hour){ $where['news_addtime'] = array('gt',time()-$hour*3600); }
+		$totalpages = ceil(D('News')->where($where)->count('news_id')/100);
+		ff_create_statusSet('news','ing');
+		for($i=$page; $i<=$totalpages; $i++){
+			$params = array();
+			$params['field'] = 'news_id';
+			$params['limit'] = 100;
+			$params['order'] = 'news_id';
+			$params['sort'] = 'desc';
+			$params['page_is'] = true;
+			$params['page_id'] = 'item';
+			$params['page_p'] = $i;
+			$infos = D('NewsView')->ff_select_page($params, $where);
+			for($n=0; $n<$nextkey; $n++){
+				unset($infos[$n]);
+			}
+			foreach($infos as $key=>$value){
+				if(ff_create_statusGet('news')=='ing'){
+					F('_create/news', array('nextKey'=>$key,'nextPage'=>$i,'nextCid'=>$cid,'nextHour'=>$hour,'totalPages'=>$totalpages) );//断点记录
+					$this->CreateNewsDb($value['news_id']);//生成网页
+				}else{
+					return false;
+				}
+			}
+		}
+		unset($infos);
+		ff_create_statusSet('news','end');
+		F('_create/news', NULL);
+	}
+	public function CreateNewsDb($news_id,$return=false){
+		$where = array();
+		$where['news_id'] = array('eq', $news_id);
+		$where['news_status'] = array('eq', 1);
+		if( $info = D('News')->ff_find('*', $where, 'cache_page_news_'.$news_id, true) ){
+			if($return){
+				return $info;
+			}else{
+				return $this->CreateNewsHtml($info);
+			}
+		}else{
+			return NULL;
+		}
+	}
+	public function CreateNewsHtml($info){
+		ob_start();
+		$info_first = $this->Lable_News_Read(array('page'=>1),$info);
+		$this->assign($info_first);
+		@$this->buildHtml(ltrim(ff_url_build('news/read',array('list_id'=>$info['list_id'],'list_dir'=>$info['list_dir'],'pinyin'=>$info['news_ename'],'id'=>$info['news_id'],'p'=>1)),C('site_path')), './', $info_first['news_skin_detail']);
+		//多页生成
+		for($i=2; $i<=$info_first['news_page_count']; $i++){
+			$info_for = $this->Lable_News_Read(array('page'=>$i),$info);
+			$this->assign($info_for);
+			@$this->buildHtml(ltrim(ff_url_build('news/read',array('list_id'=>$info['list_id'],'list_dir'=>$info['list_dir'],'pinyin'=>$info['news_ename'],'id'=>$info['news_id'],'p'=>$i)),C('site_path')), './', $info_for['news_skin_detail']);
+			unset($info_for);
+		}
+		ob_end_flush();
+		unset($info_first);
+		unset($info);
+	}	
 }
 ?>

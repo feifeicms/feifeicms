@@ -14,10 +14,10 @@ class VodModel extends RelationModel {
 		array('vod_letter','vod_letter',3,'callback'),
 		array('vod_gold','vod_gold',3,'callback'),
 		array('vod_pic','vod_pic',3,'callback'),
+		array('vod_content','vod_content',3,'callback'),
 		array('vod_addtime','vod_addtime',3,'callback'),
 		array('vod_filmtime','vod_filmtime',3,'callback'),
 		array('vod_year','vod_year',3,'callback'),
-		array('vod_isend','vod_isend',3,'callback'),
 		array('vod_scenario','vod_scenario',3,'callback'),
 		array('vod_state','vod_state',3,'callback'),
 	);
@@ -62,16 +62,19 @@ class VodModel extends RelationModel {
 	}
 	//图片处理
 	public function vod_pic(){
-		$img = D('Img');
-		return $img->down_load(trim($_POST["vod_pic"]));
-	}		
+		return D('Img')->down_load(trim($_POST["vod_pic"]));
+	}	
+	//内容处理
+	public function vod_content($content){
+		return ff_content_img($content,'vod');
+	}
 	//积分处理
 	public function vod_gold(){
 		if($_POST["vod_gold"] > 10){
 			$_POST["vod_gold"] = 10;
 		}	
 		return 	$_POST["vod_gold"];
-	}			
+	}
 	//是否更新时间
 	public function vod_addtime(){
 		if ($_POST['checktime']) {
@@ -94,14 +97,6 @@ class VodModel extends RelationModel {
 			return date('Y',strtotime($_POST['vod_filmtime']));
 		}else{
 			return intval($_POST['vod_year']);
-		}
-	}
-	//连载状态
-	public function vod_isend(){
-		if ($_POST['vod_total'] == $_POST['vod_continu']) {
-			return 1;
-		}else{
-			return 0;
 		}
 	}
 	//分集剧情
@@ -131,7 +126,7 @@ class VodModel extends RelationModel {
 	public function ff_find($field = '*', $where, $cache_name=false, $relation=true, $order=false){
 		//md5处理KEY
 		if($cache_name){
-			$cache_name = md5($cache_name);
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
 		}
 		//优先缓存读取数据
 		if( C('cache_page_vod') && $cache_name){
@@ -144,9 +139,15 @@ class VodModel extends RelationModel {
 		$info = $this->field($field)->where($where)->relation($relation)->order($order)->find();
 		//dump($this->getLastSql());
 		if($info){
-			$info['vod_scenario'] = json_decode($info['vod_scenario'], true);
-			$info['vod_play_list'] = ff_play_list($info['vod_server'], $info['vod_play'], $info['vod_url']);
-			$info['list_extend'] = json_decode($info['list_extend'], true);
+			if( $info['vod_play'] && $info['vod_url'] ){
+				$info['vod_play_list'] = ff_play_list($info['vod_server'], $info['vod_play'], $info['vod_url']);
+			}
+			if($info['vod_scenario']){
+				$info['vod_scenario'] = json_decode($info['vod_scenario'], true);
+			}
+			if($info['list_extend']){
+				$info['list_extend'] = json_decode($info['list_extend'], true);
+			}
 			if( C('cache_page_vod') && $cache_name ){
 				S($cache_name, $info, intval(C('cache_page_vod')));
 			}
@@ -161,6 +162,10 @@ class VodModel extends RelationModel {
 		//自动获取关键词tag
 		if(empty($data["vod_keywords"]) && C('collect_tags')){
 			$data["vod_keywords"] = ff_tag_auto($data["vod_name"],$data["vod_content"]);
+		}
+		//自动检测完结
+		if ($data['vod_total'] == $data['vod_continu']) {
+			$data['vod_isend'] = 1;
 		}
 		// 创建安全数据对象TP
 		$data = $this->create($data);
@@ -187,6 +192,25 @@ class VodModel extends RelationModel {
 		// TAG关系处理
 		D('Tag')->tag_update($data['vod_id'],$data["vod_keywords"],'vod_tag');
 		return $data;
+	}
+	
+	//查询同名数据
+	public function ff_select_name($length, $vod_cid){
+		$where = array();
+		//$where['vod_status'] = array('gt',0);
+		if ($vod_cid) {
+			$where['vod_cid'] = array('eq', $vod_cid);
+		}
+		//查出重名数据
+		if($length > 0 ){
+			$list = $this->field('left(vod_name, '.$length.') as vod_name,count(*) as count')->where($where)->group('left(vod_name, '.$length.')')->having('count(*)>1')->order('count desc')->select();
+		}else{
+			$list = $this->field('vod_name,count(*) as count')->where($where)->group('vod_name')->having('count(*)>1')->order('count desc')->select();
+		}
+		if(!$list){
+			$this->success('恭喜您，无重名数据！');exit();
+		}
+		return $list;
 	}	
 	
 	// 查询多个数据
@@ -210,7 +234,7 @@ class VodModel extends RelationModel {
 			// 使用GET全局变量传递分页参数 gx_page_default
 			$_GET['ff_page_'.$params['page_id']] = $page;
 		}else{
-			$page['currentpage'] = false;
+			$page['currentpage'] = NULL;
 		}	
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->page($page['currentpage'])->order(trim($params['order'].' '.$params['sort']))->select();
 		//dump($this->getLastSql());

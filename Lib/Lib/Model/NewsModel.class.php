@@ -15,7 +15,8 @@ class NewsModel extends RelationModel {
 		array('news_ename','a_ename',3,'callback'),
 		array('news_letter','a_letter',3,'callback'),
 		array('news_addtime','a_addtime',3,'callback'),
-		array('news_pic','news_pic',3,'callback'),
+		array('news_pic','a_pic',3,'callback'),
+		array('news_content','a_content',3,'callback'),
 	);
 	// 关联定义
 	protected $_link = array(
@@ -73,17 +74,20 @@ class NewsModel extends RelationModel {
 		}
 	}
 	//图片处理
-	public function news_pic(){
-		$img = D('Img');
-		return $img->down_load(trim($_POST["news_pic"]));
+	public function a_pic(){
+		return D('Img')->down_load(trim($_POST["news_pic"]), 'news');
+	}
+	//内容处理
+	public function a_content($content){
+		return ff_content_img($content,'news');
 	}
 	
 	// 通过ID查询详情数据
 	public function ff_find($field = '*', $where, $cache_name=false, $relation=true, $order=false){
 		//md5处理KEY
 		if($cache_name){
-			$cache_name = md5($cache_name);
-		}		
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
+		}
 		//优先缓存读取数据
 		if( C('cache_page_news') && $cache_name){
 			$cache_info = S($cache_name);
@@ -95,6 +99,9 @@ class NewsModel extends RelationModel {
 		$info = $this->field($field)->where($where)->relation($relation)->order($order)->find();
 		//dump($this->getLastSql());
 		if($info){
+			if($info['list_extend']){
+				$info['list_extend'] = json_decode($info['list_extend'], true);
+			}
 			if( C('cache_page_news') && $cache_name ){
 				S($cache_name, $info, intval(C('cache_page_news')));
 			}

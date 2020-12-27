@@ -21,7 +21,8 @@ class RecordModel extends RelationModel {
 				$where['record_uid'] = array('eq',$data['record_uid']);
 				$where['record_sid'] = array('eq',$data['record_sid']);
 				$where['record_type']	= array('eq',$data['record_type']);
-				$cache_info = $this->where($where)->limit(50)->order('record_time desc')->select();
+				$cache_info = $this->where($where)->limit(intval(C('ui_record')))->order('record_time desc')->select();
+				krsort($cache_info);//与cookie记录的顺序保持一致 先看的在前面 由前台模板处理
 				//写入缓存
 				if( $cache_info && $cache_time && $cache_name ){
 					S($cache_name, $cache_info , $cache_time);
@@ -29,15 +30,16 @@ class RecordModel extends RelationModel {
 			}
 			//格式化
 			foreach($cache_info as $key=>$value){
-				$info[$value['record_sid']][$value['record_did']][]=array('type'=>$value['record_type'], 'sid'=>$value['record_did_sid'], 'pid'=>$value['record_did_pid']);
+				$info[$value['record_sid']][$value['record_did']]=array('type'=>$value['record_type'],'sid'=>$value['record_did_sid'],'pid'=>$value['record_did_pid']);
 			}
 		}else{
-			$cookie_old = cookie('ff-record');
-			if($cookie_old){
-				$cookie_array = explode(',',cookie('ff-record'));
-				foreach($cookie_array as $key=>$value){
-					$info[1][$value][] = array('type'=>1);
-				}
+			$cookie_old = unserialize(cookie('ff-record'));//反解cookie数组
+			$cookie_old = array_slice($cookie_old,-intval(C('ui_record')));//取最后多少条
+			$info = array();
+			foreach($cookie_old as $key=>$value){
+				list($model_id,$detail_id) = explode('-',$key);
+				list($sid,$pid) = explode('-',$value);
+				$info[$model_id][$detail_id] = array('type'=>1,'sid'=>$sid,'pid'=>$pid);
 			}
 		}
 		//json数组格式
@@ -67,18 +69,14 @@ class RecordModel extends RelationModel {
 				$info = $this->add($data);
 			}
 			return $info;
-		}else{//cookie 只记录vodid
-			unset($data['record_uid']);
-			$cookie_old = cookie('ff-record');
-			if($cookie_old){
-				$array = explode(',',cookie('ff-record'));
-				array_push($array, $data["record_did"]);
-				$ids = implode(',', array_unique($array));
-			}else{
-				$ids = $data["record_did"];
+		}else{//cookie['1-134']='1-31';modelid-detailid=sid-pid
+			$cookie_old = unserialize(cookie('ff-record'));
+			$cookie_new = array();
+			$cookie_new[$data['record_sid'].'-'.$data['record_did']] = intval($data['record_did_sid']).'-'.intval($data['record_did_pid']);
+			if( $cookie_old ){
+				$cookie_new = array_merge($cookie_old,$cookie_new);
 			}
-			//写入COOKIE 去重后的数组 "1,2,3,4,5"
-			cookie('ff-record', $ids, 2592000);
+			cookie('ff-record',serialize(array_slice($cookie_new,-intval(C('ui_record')))), 2592000);
 			return 'cookie';
 		}
 	}
@@ -92,7 +90,10 @@ class RecordModel extends RelationModel {
 	
 	// 通过ID查询详情数据
 	public function ff_find($field = '*', $where, $cache_name=false, $cache_time=0, $relation=true, $order=false){
-		$cache_name = md5($cache_name);
+		//md5处理KEY
+		if($cache_name){
+			$cache_name = md5(C('cache_foreach_prefix').$cache_name);
+		}
 		//优先缓存读取数据
 		if( $cache_time && $cache_name){
 			$cache_info = S($cache_name);

@@ -45,13 +45,13 @@ class OrdersModel extends RelationModel {
 	}
 	
 	//根据订单号修改订单状态及更新用户影币
-	public function ff_update_order($ordersign){
+	public function ff_update_order($ordersign, $total_fee){
 		$where = array();
 		$where['order_sign'] = array("eq", $ordersign);
 		//查询订单
 		$info = $this->field('order_uid,order_ispay,order_money')->where($where)->find();
-		//未付款状态
-		if($info['order_ispay'] != 2){
+		//未付款状态用金额相同或金额大于
+		if( ($info['order_ispay'] < 2) && ($info['order_money'] >= $total_fee) ){
 			//更新订单状态
 			$this->where($where)->save( array('order_status'=>1,'order_ispay'=>2,'order_shipping'=>1,'order_paytime'=>time(),'order_confirmtime'=>time()) );
 			//更新用户积分

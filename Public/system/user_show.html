@@ -6,34 +6,6 @@
 <link rel='stylesheet' type='text/css' href='__PUBLIC__/css/admin-style.css' />
 <script charset="utf-8" src="__PUBLIC__/jquery/1.11.3/jquery.min.js"></script>
 <script charset="utf-8" src="__PUBLIC__/js/admin.js"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-	$feifeicms.show.table();
-	//排序
-	$('.ff-order').on('click',function(){
-		$order = $(this).attr('data-order');
-		$sort = $(this).attr('data-sort');
-		$url = "{$link}".replace("FFLINK",1).replace("{$order}",$order);
-		if($(this).attr('data-sort') == "desc"){
-			$url = $url.replace("desc","asc");
-		}else{
-			$url = $url.replace("asc","desc");
-		}
-		self.location.href = $url;
-	});
-	//排序图标
-	$("img.ff-order").each(function(i){
-		if($(this).attr('data-order') == '{$order}'){
-			if($(this).attr('data-sort') == 'desc'){
-				$(this).attr('src','__PUBLIC__/images/admin/down.gif').addClass('active');
-			}else{
-				$(this).attr('src','__PUBLIC__/images/admin/up.gif').addClass('active');
-			}
-			return false;
-		}
-	});
-});
-</script>
 </head>
 <body class="body">
 <form action="?s=Admin-Admin-Delall" method="post" name="myform" id="myform"> 
@@ -51,25 +23,30 @@ $(document).ready(function(){
 <table border="0" cellpadding="0" cellspacing="0" class="table">
   <thead>
     <tr class="ct">
-      <th class="l" width="80"><img class="ff-order" data-order="user_id" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">ID</th>
-      <th class="l">用户名称</th>
-      <th class="l" width="80"><img class="ff-order" data-order="user_score" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">影币</th>
-      <th class="l" width="80"><img class="ff-order" data-order="user_follow" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">关注度</th>
-      <th class="l" width="120"><img class="ff-order" data-order="user_logtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">上次登录时间</th>
-      <th class="l" width="120"><img class="ff-order" data-order="user_deadtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">VIP到期时间</th>
-      <th class="l" width="100">相关</th>
+      <th class="l">
+			<span style="float:left"><span style="float:left;">ID<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'id')))}" data-order="id" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></span> 邮箱（用户名）
+			</th>
+      <th class="l" width="80">影币 <img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'score')))}" data-order="score" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="80">关注度<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'follow')))}" data-order="follow" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="120">上次登录时间<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'logtime')))}" data-order="logtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="120">VIP到期时间<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'deadtime')))}" data-order="deadtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="100">属性</th>
       <th class="r" width="100">操作</th>
     </tr>
   </thead>
   <volist name="list" id="feifei">
   <tbody>
   <tr>
-    <td class="l ct"><input name='ids[]' type='checkbox' value='{$feifei.user_id}' class="noborder">{$feifei.user_id}</td>
-    <td class="l pd">{$feifei.user_name|remove_xss}</td>
+    <td class="l pd">
+		<label class="fl ids_check"><input name='ids[]' type='checkbox' value='{$feifei.user_id}' class="noborder"></label>
+    <label class="fl ids_show">{$feifei.user_id}</label>
+		<label class="fl">（{$feifei.user_name|htmlspecialchars}）</label>
+		<label class="fl">{$feifei.user_email|htmlspecialchars}</label>
+		</td>
     <td class="l ct">{$feifei.user_score}</td>
     <td class="l ct">{$feifei.user_follow}</td>
-    <td class="l ct">{$feifei.user_logtime|date='Y-m-d H:i',###}</td>
-    <td class="l ct">{$feifei.user_deadtime|date='Y-m-d H:i',###}</td>
+    <td class="l ct">{$feifei.user_logtime|date='Y.m.d H:i',###}</td>
+    <td class="l ct">{$feifei.user_deadtime|date='Y.m.d H:i',###}</td>
     <td class="l ct">
     <a href="?s=Admin-Forum-Show-uid-{$feifei.user_id}" target="_blank">评论</a>
     <a href="?s=Admin-Orders-Show-uid-{$feifei.user_id}" target="_blank">订单</a>
@@ -94,7 +71,7 @@ $(document).ready(function(){
     <tr>
       <td colspan="8" class="r">
       <input type="button" value="全选" class="submit" onClick="checkall('all');">
-      <input name="" type="button" value="反选" class="submit" onClick="checkall();">
+      <input type="button" value="反选" class="submit" onClick="checkall();">
       <input type="button" value="解封" class="submit" onClick="post('?s=Admin-User-Status-value-1');">
       <input type="button" value="封禁" class="submit" onClick="post('?s=Admin-User-Status-value-0');">
       <input type="button" value="删除" class="submit" onClick="post('?s=Admin-User-Delall');">
@@ -104,5 +81,9 @@ $(document).ready(function(){
 </table>
 </form>
 <include file="./Public/system/footer.html" />
+<script type="text/javascript">
+$feifeicms.show.table();
+$feifeicms.show.sort("{$order}");
+</script>
 </body>
 </html>

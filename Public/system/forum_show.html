@@ -6,44 +6,6 @@
 <link rel='stylesheet' type='text/css' href='__PUBLIC__/css/admin-style.css' />
 <script charset="utf-8" src="__PUBLIC__/jquery/1.11.3/jquery.min.js"></script>
 <script charset="utf-8" src="__PUBLIC__/js/admin.js"></script>
-<style>
-.ff-order{
-	margin-right:5px;
-	cursor:pointer;
-}
-</style>
-<script type="text/javascript">
-$(document).ready(function(){
-	$feifeicms.show.table();
-	//跳转
-	$('.submit').on('click',function(){
-		if($(this).attr('data-url')){
-			self.location.href = $(this).attr('data-url');
-		}
-	});
-	//排序
-	$('.ff-order').on('click',function(){
-		$url = '?s=Admin-Forum-Show-cid-{$cid}-sid-{$sid}-uid-{$uid}-pid-{$pid}-status-{$status}-istheme-{$istheme}-order-'+$(this).attr('data-order')+'-sort-';
-		if($(this).attr('data-sort') == 'desc'){
-			$url+= 'asc';
-		}else{
-			$url+= 'desc';
-		}
-		self.location.href = $url;
-	});
-	//排序图标
-	$("img.ff-order").each(function(i){
-		if($(this).attr('data-order') == '{$order}'){
-			if($(this).attr('data-sort') == 'desc'){
-				$(this).attr('src','__PUBLIC__/images/admin/down.gif').css("border-bottom","2px solid #ff0000");
-			}else{
-				$(this).attr('src','__PUBLIC__/images/admin/up.gif').css("border-bottom","2px solid #ff0000");
-			}
-			return false;
-		}
-	});
-});
-</script>
 </head>
 <body class="body">
 <form action="?s=Admin-Forum-Show" method="post" name="myform" id="myform">
@@ -63,23 +25,30 @@ $(document).ready(function(){
 <table border="0" cellpadding="0" cellspacing="0" class="table">
   <thead>
     <tr class="ct">
-      <th class="r" width="40"><img class="ff-order" data-order="forum_id" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">ID</th>
+      <th class="r" width="30">ID<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'id')))}" data-order="id" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
       <th class="l" >评论内容</th>
-      <th class="l" width="50"><img class="ff-order" data-order="forum_reply" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">回复</th>
-      <th class="l" width="50"><img class="ff-order" data-order="forum_report" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">举报</th>
-      <th class="l" width="50"><img class="ff-order" data-order="forum_up" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">支持</th>
-      <th class="l" width="50"><img class="ff-order" data-order="forum_down" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">反对</th>
-      <th class="r" width="90"><img class="ff-order" data-order="forum_addtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/down.gif">发布时间</th>
+      <th class="l" width="60">回复<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'reply')))}" data-order="reply" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="60">举报<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'report')))}" data-order="report" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="60">支持<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'up')))}" data-order="up" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="l" width="60">反对<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'down')))}" data-order="down" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
+      <th class="r" width="120">发布时间<img class="sort" data-url="?{:http_build_query(array_merge($urls,array('order'=>'addtime')))}" data-order="addtime" data-sort="{$sort}" src="__PUBLIC__/images/admin/{$sort}.gif"></th>
     </tr>
   </thead>
   <tbody>
   <volist name="list" id="feifei">
   <tr>
-    <td class="r ct"><input name='ids[]' type='checkbox' value='{$feifei.forum_id}' class="noborder" checked="checked"></td>
-    <td class="r pd" style="font-size:14px;">
-    	<p style="color:#666;">
-      	<strong><eq name="feifei.forum_pid" value="0">主题贴<else/>回复贴</eq></strong>
-      	{$feifei.forum_content|htmlspecialchars|msubstr=0,280,'utf-8',true}
+    <td class="r ct">
+			<input name='ids[]' type='checkbox' value='{$feifei.forum_id}' class="noborder" checked="checked">
+		</td>
+    <td class="r">
+		<eq name="feifei.forum_sid" value="24">
+			<p>
+      	<a href="?g=admin&m=vod&a=add&id={$feifei.forum_cid}#sid{$feifei.forum_pid}">{$feifei.forum_content|htmlspecialchars|nb|msubstr=0,480,'utf-8',true}</a>
+      </p>
+		<else/>
+    	<p>
+      	<strong><a href="{:ff_url('forum/read', array('id'=>$feifei['forum_id']), true)}" target="_blank"><eq name="feifei.forum_pid" value="0">主题贴<else/>回复贴</eq></a></strong>
+      	<a href="{:ff_url('forum/read',array('id'=>$feifei['forum_id']),true)}" title="查看评论" target="_blank" style="color:#666">{$feifei.forum_content|htmlspecialchars|nb|msubstr=0,480,'utf-8',true}</a>
       </p>
     	<p>
       	<a href="?s=Admin-Forum-Show-uid-{$feifei.user_id}">{$feifei.user_name|htmlspecialchars}</a>
@@ -87,17 +56,18 @@ $(document).ready(function(){
         <eq name="feifei.forum_status" value="1"><a href="?s=Admin-Forum-Status-ids-{$feifei.forum_id}-value-0" title="点击隐藏评论"><font color="green">已审核</font></a><else /><a href="?s=Admin-Forum-Status-ids-{$feifei.forum_id}-value-1" title="点击显示评论">未审核</a></eq>
         <eq name="feifei.forum_istop" value="1"><a href="?s=Admin-Forum-Istop-ids-{$feifei.forum_id}-value-0" title="点击取消置顶"><font color="red">已置顶</font></a><else /><a href="?s=Admin-Forum-Istop-ids-{$feifei.forum_id}-value-1" title="点击置顶评论">未置顶</a></eq>
         <a href="?s=Admin-Forum-Add-id-{$feifei.forum_id}" title="点击编辑评论">编辑评论</a>
+				<a href="?s=Admin-Forum-Add-isrepost-1-id-{$feifei.forum_id}" title="点击回复评论">回复评论</a>
         <a href="?s=Admin-Forum-Del-ids-{$feifei.forum_id}" onClick="return confirm('确定删除该评论吗?')" title="点击删除评论">删除评论</a>
-      	<a href="{:ff_url('forum/detail',array('id'=>$feifei['forum_id']),true)}" title="查看评论" target="_blank">查看评论</a>
-        <a href="?s=Admin-Forum-Show-pid-{$feifei.forum_id}" title="查看该讨论的回复贴">查看回复({$feifei.forum_reply})</a>
-        <a href="?s=Admin-Forum-Show-sid-{$feifei.forum_sid}-cid-{$feifei.forum_cid}" title="查看相同内容ID的评论">内容ID({$feifei.forum_cid})</a>
+				<a href="?s=Admin-Forum-Show-sid-{$feifei.forum_sid}-cid-{$feifei.forum_cid}" title="查看相同内容ID的评论">专辑详情</a>
+        <a href="?s=Admin-Forum-Show-pid-{$feifei.forum_id}" title="查看该讨论的回复贴">回复详情</a>
       </p>
+		</eq>
     </td>
     <td class="r ct">{$feifei.forum_reply}</td>
     <td class="r ct">{$feifei.forum_report}</td>
     <td class="r ct">{$feifei.forum_up}</td>
     <td class="r ct">{$feifei.forum_down}</td>
-    <td class="r ct">{$feifei.forum_addtime|date='Y-m-d',###}</td>
+    <td class="r ct">{$feifei.forum_addtime|date='Y.m.d H:i',###}</td>
   </tr>
   </volist>
   </tbody>
@@ -108,7 +78,7 @@ $(document).ready(function(){
     <tr>
       <td colspan="9" class="r">
       <input type="button" value="全选" class="submit" onClick="checkall('all');">
-      <input name="" type="button" value="反选" class="submit" onClick="checkall();">
+      <input type="button" value="反选" class="submit" onClick="checkall();">
       <input type="button" value="批量审核" class="submit" onClick="post('?s=Admin-Forum-Status-value-1');">
       <input type="button" value="取消审核" class="submit" onClick="post('?s=Admin-Forum-Status-value-0');">
       <input type="button" value="批量删除" class="submit" onClick="if(confirm('删除后将无法还原，确定要删除吗?')){post('?s=Admin-Forum-Del');}else{return false;}">
@@ -120,5 +90,15 @@ $(document).ready(function(){
 </table>
 </form>
 <include file="./Public/system/footer.html" />
+<script type="text/javascript">
+$feifeicms.show.table();
+$feifeicms.show.sort("{$order}");
+//跳转
+$('.submit').on('click',function(){
+	if($(this).attr('data-url')){
+		self.location.href = $(this).attr('data-url');
+	}
+});
+</script>
 </body>
 </html>

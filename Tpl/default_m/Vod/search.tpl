@@ -11,6 +11,10 @@ if($search_wd){
 	$item_vod = ff_mysql_vod('director:'.$search_director.';limit:30;page_is:true;page_id:search;page_p:'.$search_page.';cache_name:default;cache_time:default;order:vod_'.$search_order.';sort:desc');
   $params = array('director'=>urlencode($search_director),'p'=>'FFLINK');
   $page = ff_url_page('vod/search', $params, true, 'search', 4);
+}else if($search_writer){
+	$item_vod = ff_mysql_vod('writer:'.$search_writer.';limit:30;page_is:true;page_id:search;page_p:'.$search_page.';cache_name:default;cache_time:default;order:vod_'.$search_order.';sort:desc');
+  $jump = array('writer'=>urlencode($search_writer),'p'=>'FFLINK');
+  $page_info = ff_url_page('vod/search', $jump, true, 'search', 4);
 }else if($search_name){
 	$item_vod = ff_mysql_vod('name:'.$search_name.';limit:30;page_is:true;page_id:search;page_p:'.$search_page.';cache_name:default;cache_time:default;order:vod_'.$search_order.';sort:desc');
   $params = array('name'=>urlencode($search_name),'p'=>'FFLINK');
@@ -24,26 +28,26 @@ $totalpages = ff_page_count('search', 'totalpages');
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:vod_search" />
+<include file="BlockTheme:header_meta" />
+<include file="./Tpl/base/seo/vod_search" />
 </head>
 <body class="vod-search">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
 <div class="container ff-bg">
 <div class="page-header">
   <h2>
-  <span class="glyphicon glyphicon-film ff-text"></span> 
-  搜索结果：<span class="ff-text">{$search_name}{$search_actor}{$search_director}{$search_wd}</span> 
-  <small>共有<span class="ff-text">{:ff_page_count('search', 'records')}</span>个视频 第<span class="ff-text">{$search_page}</span>页</small>
+  <span class="glyphicon glyphicon-search text-green"></span> 
+	搜索 》{$search_name}{$search_actor}{$search_director}{$search_writer}{$search_wd}
+  <small>共有<span class="text-green">{:ff_page_count('search', 'records')}</span>个 第<span class="text-green">{$search_page}</span>页</small>
   </h2>
 </div>
 <ul class="list-unstyled vod-item-img ff-img-140">
   <volist name="item_vod" id="feifei">
-  <include file="Base:vod_item_img" />
+  <include file="BlockTheme:item_img_vod" />
   </volist>
 </ul>
 <gt name="totalpages" value="1">
-<div class="clearfix"></div>
+<div class="clearfix mb-1"></div>
 <div class="text-center">
   <ul class="pager">
     <gt name="search_page" value="1">
@@ -58,6 +62,7 @@ $totalpages = ff_page_count('search', 'totalpages');
 </div>
 </gt>
 </div><!--container end -->
-<include file="Block:footer" />
+<div class="clearfix mb-1"></div>
+<include file="BlockTheme:footer" />
 </body>
 </html>

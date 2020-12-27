@@ -22,7 +22,6 @@ class NavAction extends BaseAction{
 		}else{
 			$info['nav_oid'] = $rs->max('nav_oid')+1;
 		}
-		$this->assign('nav_tree',D("Nav")->ff_select_page($params));
 		$this->assign('nav_pid',intval($_GET['pid']));
 		$this->assign($info);
 		$this->display('./Public/system/nav_add.html');

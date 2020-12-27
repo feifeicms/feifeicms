@@ -8,61 +8,61 @@
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:special_detail" />
+<include file="./Tpl/base/bootstrap3/inc_header" />
+<include file="./Tpl/base/seo/special_detail" />
 </head>
 <body class="special-detail">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
 <div class="container ff-bg">
 <div class="page-header">
   <h2>
-  <span class="glyphicon glyphicon-calendar ff-text"></span>
-  <span class="ff-text">专题：{$special_name}</span>
+  <span class="glyphicon glyphicon-calendar text-green"></span>
+	<a class="text-green" href="{:ff_url('list/read',array('id'=>$special_cid),true)}">{$list_name}</a>
+  <a href="{:ff_url('special/read',array('id'=>$special_id),true)}">{$special_name}</a>
+	<label class="pull-right hidden-xs hidden-sm"><include file="./Tpl/base/bootstrap3/inc_share" /></label>
   </h2> 
 </div>
-<div class="row ff-row">
-  <div class="col-xs-12 ff-col">
-    <empty name="special_banner">
-      <div class="media">
-        <div class="media-left hidden-xs hidden-sm">
-          <img class="media-object img-thumbnail img-responsive ff-img" data-original="{$special_logo|ff_url_img}">
-        </div>
-        <div class="media-body content">
-          {$special_content}
-        </div>
-      </div>
-    <else/>
-      <p><img class="img-thumbnail img-responsive ff-img" data-original="{$special_banner|ff_url_img}"></p>
-      <p class="lead">{$special_content}</p>
-    </empty>
-  </div>
-</div>
+<!-- -->
+<empty name="special_banner">
+	<div class="media">
+		<div class="media-left hidden-xs hidden-sm">
+			<img class="media-object img-thumbnail img-responsive ff-img" data-original="{$special_logo|ff_url_img}">
+		</div>
+		<div class="media-body">
+			{$special_content}
+		</div>
+	</div>
+<else/>
+	<div><img class="img-thumbnail img-responsive ff-img special-banner" data-original="{$special_banner|ff_url_img}"></div>
+	<div class="special-content text-gray">{$special_content}</div>
+</empty>
+<!-- -->
 <div class="page-header">
-  <h2><span class="glyphicon glyphicon-film ff-text"></span> 相关影片</h2>
+  <h2><span class="glyphicon glyphicon-film text-green"></span> 相关影片</h2>
 </div>
 <ul class="list-unstyled vod-item-img ff-img-215">
 <volist name="item_vod" id="feifei">
-<include file="Base:vod_item_img" />
+<include file="BlockTheme:item_img_vod" />
 </volist>
 </ul>
 <notempty name="item_news">
 <div class="clearfix"></div>
 <div class="page-header">
-  <h2><span class="glyphicon glyphicon-list-alt ff-text"></span> 相关资讯</h2>
+  <h2><span class="glyphicon glyphicon-list-alt text-green"></span> 相关资讯</h2>
 </div>
 <ul class="news-item-ul ff-row">
   <volist name="item_news" id="feifei">
-    <include file="Base:news_item_hot" />
+    <include file="BlockTheme:item_txt_news_hits" />
   </volist>
 </ul>
 </notempty>
 <!-- -->
-<include file="Base:special_forum" />
-{$special_hits_insert}
+<include file="./Tpl/base/bootstrap3/forum_ajax_special" />
 </div><!--container end -->
-<div class="clearfix ff-clearfix"></div>
+{$special_hits_insert}
+<div class="clearfix mb-2"></div>
 <div class="container ff-bg">
-  <include file="Block:footer" />
+  <include file="BlockTheme:footer" />
 </div>
 </body>
 </html>

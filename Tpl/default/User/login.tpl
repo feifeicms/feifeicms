@@ -44,9 +44,9 @@ $(document).ready(function(){
   	<a href="{:ff_url('user/register')}">欢迎回到{$site_name}</a>
   </h2>
   <h5 class="text-center">
-    <a class="ff-text" href="{$root}">返回首页</a>
-    <a class="ff-text" href="{:ff_url('user/forget')}">忘记密码</a>
-    <a class="ff-text" href="{:ff_url('user/register')}">没有帐号注册</a>
+    <a class="text-green" href="{$root}">返回首页</a>
+    <a class="text-green" href="{:ff_url('user/forget')}">忘记密码</a>
+    <a class="text-green" href="{:ff_url('user/register')}">没有帐号注册</a>
   </h5>
   <div class="row">
   <div class="col-xs-12 ff-col">

@@ -13,9 +13,13 @@ function ff_url_create($rewrite_route){
 		if($routes[2]){//路由对应变量 如forum-vod-p-1-s-2
 			$action.= '/'.str_replace(',','/',$routes[2]);
 		}
+		//附加参数加上保存一一对应 'vod/showid=1' 'vod/showid=2'
+		if($routes[3]){
+			$action.= $routes[3];
+		}
 		//拼装二维数组
 		$create['route_rules'][$key] = $routes;
-		$create['rewrite_rules'][$action]['find'] = str_replace(array('(:num)','(:letter)','(:letternum)','(:any)'), array('([0-9]+)','([a-z][A-Z]+)','([a-z][A-Z][0-9]+)','(.*)'), $array[0]);
+		$create['rewrite_rules'][$action]['find'] = str_replace(array('(:num)','(:letter)','(:letternum)','(:any)'), array('([0-9]+)','([A-Za-z]+)','([A-Za-z0-9]+)','(.*)'), $array[0]);
 		$create['rewrite_rules'][$action]['replace'] = ff_url_replace($array[1]);
 	}
 	return $create;
@@ -40,7 +44,7 @@ function ff_url_routes($action, $routes, $params){
 		}
 	}
 	$routes = str_replace('/','\/',$routes);//TP路由需要将/转义
-	$routes = str_replace(array('(:num)','(:letter)','(:letternum)','(:any)'), array('([0-9]+)','([a-z][A-Z]+)','([a-z][A-Z][0-9]+)','(.*)'), $routes);//转化为正则规则
+	$routes = str_replace(array('(:num)','(:letter)','(:letternum)','(:any)'), array('([0-9]+)','([A-Za-z]+)','([A-Za-z0-9]+)','(.*)'), $routes);//转化为正则规则
 	return array( '/'.$routes.'$/', $array[0].'/'.$array[1], implode(',',$ids), $params);
 }
 //星级转化数组
@@ -53,19 +57,6 @@ function admin_star_arr($stars){
 		}
 	}
 	return $ss;
-}
-// 获取模板分页数据大小
-function gettplnum($rule,$filename){
-	$content = read_file(TMPL_PATH.C('default_theme').'/Home/'.trim($filename).'.tpl');
-	preg_match_all('/'.$rule.'/', $content, $data);
-	foreach($data[1] as $key=>$val){
-		if(strpos($val,'page:true')>0){
-			$array = explode(';',str_replace('num','limit',$val));
-			foreach ($array as $v){list($key,$val) = explode(':',trim($v));$param[trim($key)]=trim($val);}
-			return $param['limit'];break;
-		}
-	}
-	return 0;
 }
 // 安装测试写入文件
 function testwrite($d){
@@ -98,14 +89,6 @@ function getdirsize($dir){
 	}
 	closedir($dirlist);
 	return $dirsize;
-}
-//替换采集等通过url参数传值
-function admin_ff_url_repalce($xmlurl,$order='asc'){
-	if($order=='asc'){
-		return str_replace(array('|','@','#','||'),array('/','=','&','//'),$xmlurl);
-	}else{
-		return str_replace(array('/','=','&','||'),array('|','@','#','//'),$xmlurl);
-	}	
 }
 //通过标签分类返回对应的模块
 function admin_ff_taglist2modelname($tag_list){
@@ -188,6 +171,9 @@ function ff_table_name($tablename){
 	}	
 	if (strpos($tablename,'orders')>0){
 		return '定单';
+	}
+	if (strpos($tablename,'card')>0){
+		return '卡密';
 	}							
 }
 //获取模板编辑名称

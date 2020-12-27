@@ -1,5 +1,5 @@
 <php>
-$item_vod = ff_mysql_record('sid:1;uid:'.$user_id.';type:3;group:record_did;limit:30;page_is:true;page_id:record;page_p:'.$user_page.';cache_name:default;cache_time:default;order:record_id;sort:desc');
+$item_vod = ff_mysql_record('sid:1;uid:'.$user_id.';type:3;group:record_did;limit:30;page_is:true;page_id:record;page_p:'.$user_page.';order:record_id;sort:desc');
 $page = ff_url_page('user/center',array('action'=>'wish','p'=>'FFLINK'),true,'record',4);
 $totalpages = ff_page_count('record', 'totalpages');
 </php><!DOCTYPE html>
@@ -16,7 +16,7 @@ $totalpages = ff_page_count('record', 'totalpages');
 <div class="row">
   <div class="col-xs-12 ff-col">
     <div class="page-header">
-      <h4><span class="glyphicon glyphicon-menu-right ff-text"></span> 我想看的影片</h4>
+      <h4><span class="glyphicon glyphicon-menu-right text-green"></span> 我想看的影片</h4>
     </div>
     <include file="User:inc_item_record" />
   </div>

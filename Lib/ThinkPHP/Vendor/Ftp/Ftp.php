@@ -8,7 +8,7 @@
 //@unlink($this->getPicFile($file));
 //@unlink($this->getPicFile($thumb));
 class ftp{
-	protected $_config = array( 'ftp_host'=>'www.feifeicms.com', 'ftp_port'=>'21', 'ftp_user'=>'feifeicms', 'ftp_pwd' =>'feifeicms', 'ftp_timeout'=>'30', 'ftp_dir' =>'/', 'ftp_pasv'=>1 );
+	protected $_config = array( 'ftp_host'=>'www.feifeicms.org', 'ftp_port'=>'21', 'ftp_user'=>'feifeicms', 'ftp_pwd' =>'feifeicms', 'ftp_timeout'=>'30', 'ftp_dir' =>'/', 'ftp_pasv'=>1 );
 	protected $_conn = null; 
 	protected $_rs = null; 
 	public function __construct($config=array()){ 

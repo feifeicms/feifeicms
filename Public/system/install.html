@@ -54,12 +54,12 @@
     <td class="right"><?php echo function_exists(@mysql_close) ? mysql_get_client_info() : $error;?>&nbsp;&nbsp;<span>不支持或小于4.20版本则无法使用本系统</span></td>
   </tr>  
   <tr>
-    <td class="left">allow_url_fopen支持：</td>
-    <td class="right"><?php echo ini_get("allow_url_fopen") ? $pass : $error;?> &nbsp;&nbsp;<span>不符合要求将导致采集、远程资料本地化等功能无法应用</span></td>
+    <td class="left">curl_init支持：</td>
+    <td class="right"><?php echo function_exists(@curl_init) ? $pass : $error;?> &nbsp;&nbsp;<span>采集扩展函数，将优化采集过程中的速度与质量</span></td>
   </tr>
   <tr>
     <td class="left">file_get_contents支持：</td>
-    <td class="right"><?php echo function_exists(@file_get_contents) ? $pass : $error;?> &nbsp;&nbsp;<span>不符合要求将导致采集、远程资料本地化等功能无法应用</span></td>
+    <td class="right"><?php echo function_exists(@file_get_contents) ? $pass : $error;?> &nbsp;&nbsp;<span>默认采集函数，如果两个都不支持将导致采集、远程资料本地化等功能无法应用</span></td>
   </tr>  
   <tr>
     <td class="left">GD图形处理扩展库版本：</td>

@@ -55,22 +55,12 @@ $(document).ready(function(){
 <tr>
   <td class="tr">
   <p>1：裁剪封面功能需要先将远程图片下载到服务器。</p>
-  <p>2：第一次采集完需下载的封面很多，此时建议不要选择自动缩略图功能，下载完后再单独生成截图。</p>
+  <p>2：第一次采集需下载的封面很多，此时建议不要选择自动缩略图功能，下载完后再单独生成截图。</p>
   </td>
 </tr>
 </table>
 <!-- -->
-<div class="backdrop" id="ff-dialog-back" style="display:none;"></div>
-<div class="modal" id="ff-dialog-box" style="display:none;">
-  <div class="inner">
-    <div class="head">
-      <div class="ff_dialog_title" id="ff_dialog_title">...</div>
-      <i class="ff_dialog_close" onClick="javascript:ff_dialog_close();location.reload();"></i>
-    </div>
-    <div class="body" id="ff_dialog_body">
-    </div>
-  </div>
-</div>
+<include file="./Public/system/plus_dialog.html" />
 <include file="./Public/system/footer.html" />
 </body>
 </html>

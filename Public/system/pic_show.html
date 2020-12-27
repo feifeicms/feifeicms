@@ -40,7 +40,7 @@ $(document).ready(function(){
 <notempty name="dirlast"> 
   <tbody>  
   <tr class="firstalt">
-  <td colspan="5" class="r pd"><img src="__PUBLIC__/images/file/last.gif"> <a href="?s=Admin-Pic-Show-id-{$dirlast}">上级目录</a> 当前目录: {$dirpath}</td>
+  <td colspan="5" class="r pd"><img src="__PUBLIC__/images/file/last.gif"> <a href="?g=admin&m=pic&a=show&id={$dirlast}">上级目录</a> 当前目录: {$dirpath}</td>
   </tr>
   </tbody>
 </notempty>
@@ -48,10 +48,10 @@ $(document).ready(function(){
   <eq name="feifei.isDir" value="1">
   <tbody> 
   <tr>
-  	<td class="l pd"><img src="__PUBLIC__/images/file/folder.gif" width="16" height="16"> <a href="?s=Admin-Pic-Show-id-{$feifei.pathfile}">{$feifei.filename}</a></td>
+  	<td class="l pd"><img src="__PUBLIC__/images/file/folder.gif" width="16" height="16"> <a href="?g=admin&m=pic&a=show&id={$feifei.pathfile}">{$feifei.filename}</a></td>
     <td class="l ct">{:byte_format(getdirsize($feifei['path'].'/'.$feifei['filename']))}</td>
     <td class="l ct">{$feifei.mtime|ff_color_date='Y-m-d H:i:s',###}</td>
-    <td class="l ct"><a href="?s=Admin-Pic-Show-id-{$feifei.path}/{:str_replace('-','*',$feifei['filename'])}">下级目录</a> <a href="?s=Admin-Pic-Ajaxpic-id-{$feifei.path}/{:str_replace('-','*',$feifei['filename'])}" class="del">清理</a></td>
+    <td class="l ct"><a href="?g=admin&m=pic&a=show&id={$feifei.pathfile}">下级目录</a> <a href="?g=admin&m=pic&a=clear&id={$feifei.pathfile}" class="del">清理</a></td>
   </tr>
   </tbody>
   <else />
@@ -64,7 +64,7 @@ $(document).ready(function(){
     </in>
     <td class="l ct">{$feifei.size|byte_format}</td>
     <td class="l ct">{$feifei.mtime|ff_color_date='Y-m-d H:i:s',###}</td>
-    <td class="r ct"><a href="{$feifei.path}/{$feifei.filename}" target="_blank">浏览</a> <a href="?s=Admin-Pic-Del-id-{$feifei.path}/{:str_replace('-','*',$feifei['filename'])}" onClick="return confirm('确定删除该文件吗?')">删除</a></td>
+    <td class="r ct"><a href="{$feifei.pathfile}" target="_blank">浏览</a> <a href="?g=admin&m=pic&a=del&id={$feifei.pathfile}" onClick="return confirm('确定删除该文件吗?')">删除</a></td>
   </tr>
   </tbody>
   </eq>  

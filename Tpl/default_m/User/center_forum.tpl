@@ -1,5 +1,5 @@
 <php>
-$item_forum = ff_mysql_forum('uid:'.$user_id.';limit:20;page_is:true;page_id:forum;page_p:'.$user_page.';cache_name:default;cache_time:default;order:forum_id;sort:desc');
+$item_forum = ff_mysql_forum('uid:'.$user_id.';limit:20;page_is:true;page_id:forum;page_p:'.$user_page.';order:forum_id;sort:desc');
 $page = ff_url_page('user/center',array('action'=>'forum','p'=>'FFLINK'),true,'forum',4);
 $totalpages = ff_page_count('forum', 'totalpages');
 </php><!DOCTYPE html>
@@ -16,17 +16,19 @@ $totalpages = ff_page_count('forum', 'totalpages');
 <div class="row">
   <div class="col-xs-12 ff-col">
     <div class="page-header">
-      <h4><span class="glyphicon glyphicon-menu-right ff-text"></span> 我的评论与留言</h4>
+      <h4><span class="glyphicon glyphicon-menu-right text-green"></span> 我的评论与留言</h4>
     </div>
-    <table class="table table-striped table-bordered table-responsive">
+    <table class="table table-striped table-bordered table-responsive ff-forum" data-type="{$Think.config.forum_type}">
     <tbody>
      <volist name="item_forum" id="feifei">
      <tr>
       	<td>{$feifei.forum_addtime|date='Y-m-d H:i:s',###}
-        <small><a href="{:ff_url('forum/detail', array('id'=>$feifei['forum_id']), true)}" target="_blank">详情</a></small></td>
+        <a href="{:ff_url('forum/read', array('id'=>$feifei['forum_id']), true)}" target="_blank">详情</a>
+				<eq name="feifei.user_id" value="$site_user_id"><a class="text-muted forum-delete" href="javascript:;" data-id="{$feifei.forum_id}" data-toggle="tooltip" data-placement="top" title="删除">删除</a></eq>
+				</td>
       </tr>
       <tr>
-      	<td class="forum-detail">{$feifei.forum_content|htmlspecialchars|msubstr=0,300}</td>
+      	<td class="forum-detail">{$feifei.forum_content|htmlspecialchars|nb|msubstr=0,300}</td>
       </tr>
       </volist>
     </tbody>

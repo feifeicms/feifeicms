@@ -34,6 +34,14 @@ class UpdownAction extends HomeAction{
 		$this->show($id,trim($_GET['type']),'forum');
   }
 	
+	public function person(){
+		$id = intval($_GET['id']);
+		if ($id < 1) {
+			$this->ajaxReturn(-1,'数据非法！',-1);
+		}
+		$this->show($id,trim($_GET['type']),'person');
+  }
+	
 	public function show($id, $type, $model='vod'){
 		$rs = D(ucfirst($model));
 		if($type){

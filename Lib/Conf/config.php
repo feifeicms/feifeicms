@@ -1,12 +1,14 @@
 <?php
 $config = require './Runtime/Conf/config.php';
 $array = array(
-	'USER_AUTH_KEY'=>'feifeicms',// 用户认证SESSION标记
-	'NOT_AUTH_ACTION'=>'index,show,add,top,left,main',// 默认无需认证操作
-	'REQUIRE_AUTH_MODULE'=>'Admin,List,Vod,News,User,Collect,Data,Upload,Link,Ads,Cache,Create,Tpl,Cm,Gb,Tag,Special,Nav,Side,Pic',// 默认需要认证模型
+	//'APP_DEBUG'       => true,    // 是否开启调试模式
+  //'SHOW_RUN_TIME'		=> true,   // 运行时间显示
+  //'SHOW_ADV_TIME'		=> true,   // 显示详细的运行时间
+  //'SHOW_DB_TIMES'		=> true,   // 显示数据库查询和写入次数
 	'URL_PATHINFO_DEPR'=>'-',
 	'URL_MODEL' => 3,
-	'APP_GROUP_LIST'=>'Admin,Home,Plus',//项目分组
+	'APP_GROUP_LIST'=>'Admin,Home,Crontab,Plus',//项目分组
+	'USER_AUTH_KEY'=>'feifeicms',// 用户认证SESSION标记
 	'TMPL_FILE_DEPR'=>'_',//模板文件MODULE_NAME与ACTION_NAME之间的分割符，只对项目分组部署有效
 	'LANG_SWITCH_ON'=>true,// 多语言包功能
 	'LANG_AUTO_DETECT'=>false,//是否自动侦测浏览器语言
@@ -22,10 +24,11 @@ $array = array(
 	//3.3 add
 	'TMPL_DETECT_THEME'=>true,
 	'VAR_TEMPLATE'=>"theme",
-	//'APP_DEBUG'       => true,    // 是否开启调试模式
-  //'SHOW_RUN_TIME'		=> true,   // 运行时间显示
-  //'SHOW_ADV_TIME'		=> true,   // 显示详细的运行时间
-  //'SHOW_DB_TIMES'		=> true,   // 显示数据库查询和写入次数	
+	//4.1 add
+	'TOKEN_ON'=>false, 
+	'SESSION_AUTO_START'=>false,
+	'LOG_EXCEPTION_RECORD'=>false,
+	//'TMPL_EXCEPTION_FILE' => './Public/error/500.html',
 );
 return array_merge($config,$array);
 ?>

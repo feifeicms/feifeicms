@@ -2,19 +2,21 @@
 class TagModel extends AdvModel {
 	// 更新Tag 不采用关联模式(用于手动更新关联,删除之前的数据后重新写入)
 	public function tag_update($id, $tag, $list){
-		$tag_cid = array('vod_type'=>1,'vod_tag'=>2,'news_type'=>3,'news_tag'=>4,'special_type'=>5,'special_tag'=>6);
-		$rs = M("Tag");
-		$data['tag_id'] = $id;
-		$data['tag_list'] = $list;
-		$rs->where($data)->delete();
-		$tags = explode(',',trim($tag));
-		$tags = array_unique($tags);
-		foreach($tags as $key=>$val){
-			if($val){
-				$data['tag_name'] = $val;
-				$data['tag_cid'] = $tag_cid[$list];
-				$data['tag_ename'] = ff_pinyin(trim($data['tag_name']));
-				$rs->data($data)->add();
+		if($id && $tag){
+			$tag_cid = array('vod_type'=>1,'vod_tag'=>2,'news_type'=>3,'news_tag'=>4,'special_type'=>5,'special_tag'=>6,'star_type'=>7,'star_tag'=>8,'role_type'=>9,'role_tag'=>10);
+			$data = array();
+			$data['tag_id'] = $id;
+			$data['tag_list'] = $list;
+			$this->where($data)->delete();
+			$tags = explode(',',trim($tag));
+			$tags = array_unique($tags);
+			foreach($tags as $key=>$val){
+				if($val){
+					$data['tag_name'] = $val;
+					$data['tag_cid'] = $tag_cid[$list];
+					$data['tag_ename'] = ff_pinyin(trim($data['tag_name']));
+					$this->data($data)->add();
+				}
 			}
 		}
 	}

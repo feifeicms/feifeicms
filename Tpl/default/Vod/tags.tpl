@@ -5,21 +5,21 @@ $totalpages = ff_page_count('vodtags', 'totalpages');
 </php><!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-<include file="Base:header_meta" />
-<include file="Seo:vod_tags" />
+<include file="./Tpl/base/bootstrap3/inc_header" />
+<include file="./Tpl/base/seo/vod_tags" />
 </head>
 <body class="vod-tags">
-<include file="Block:header" />
+<include file="BlockTheme:header" />
 <div class="container ff-bg">
 <div class="page-header">
   <h2>
-    <span class="ff-text">话题：{$tag_type}{$tag_tag}{$tag_name}</span>
-    <small>共有<span class="ff-text">{:ff_page_count('vodtags', 'records')}</span>个影片 第<span class="ff-text">{$tag_page}</span>页</small>
+    <span class="text-green">话题：{$tag_type}{$tag_tag}{$tag_name}</span>
+    <small>共有<span class="text-green">{:ff_page_count('vodtags', 'records')}</span>个影片 第<span class="text-green">{$tag_page}</span>页</small>
   </h2>
 </div>
 <ul class="list-unstyled vod-item-img ff-img-215">
   <volist name="item_vod" id="feifei">
-  <include file="Base:vod_item_img" />
+  <include file="BlockTheme:item_img_vod" />
   </volist>
 </ul>
 <gt name="totalpages" value="1">
@@ -39,9 +39,9 @@ $totalpages = ff_page_count('vodtags', 'totalpages');
 </div>
 </gt>
 </div><!--container end -->
-<div class="clearfix ff-clearfix"></div>
+<div class="clearfix mb-2"></div>
 <div class="container ff-bg">
-  <include file="Block:footer" />
+  <include file="BlockTheme:footer" />
 </div>
 </body>
 </html>

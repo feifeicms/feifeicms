@@ -32,7 +32,9 @@ class NavModel extends AdvModel {
 			}
 		}		
 		$infos = $this->field($params['field'])->where($where)->limit($params['limit'])->order(trim($params['order'].' '.$params['sort']))->select();
-		$infos = list_to_tree($infos, 'nav_id', 'nav_pid', 'nav_son');
+		if($infos_son = list_to_tree($infos, 'nav_id', 'nav_pid', 'nav_son')){
+			$infos = $infos_son;
+		}
 		//是否写入数据缓存
 		if($params['cache_name'] && $params['cache_time']){
 			S($params['cache_name'], $infos, intval($params['cache_time']) );

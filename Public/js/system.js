@@ -1,6 +1,6 @@
-/* Version 3.5
+/* Version 4.2
 ** QQ:271513820 
-** Up:2017.09.10*/
+** Up:2019.12.02*/
 var feifei = {
 //start
 'browser':{//浏览器信息
@@ -27,6 +27,56 @@ var feifei = {
 		};
 	}()
 },
+'cms':{//系统
+	'nav': function($id){//主导航高亮
+		$id = $('nav[data-dir]').attr('data-dir');
+		$($id).addClass("active");
+	},
+	'pre':function(){//代码高亮
+		//https://highlightjs.org/static/demo/
+		if($("pre code").length){
+			$.ajaxSetup({ 
+				cache: true 
+			});
+			$("<link>").attr({ rel: "stylesheet",type: "text/css",href: "//lib.baomitu.com/highlight.js/9.12.0/styles/googlecode.min.css"}).appendTo("head");
+			$.getScript("//lib.baomitu.com/highlight.js/9.12.0/highlight.min.js", function(){
+				$('pre code').each(function(i, block) {
+					hljs.highlightBlock(block);
+				});
+			});
+		}
+	},
+	'collapse':function(){//内容详情折叠与自适应图片
+		$('.ff-content img').addClass("img-responsive");
+		$('body').on("click", "[data-toggle=ff-collapse]", function(){
+			$this = $(this);
+			$($this.attr('data-target')).toggle();
+			$($this.attr('data-default')).toggle();
+			if($this.attr('data-html')){
+				$data_html = $this.html();
+				$this.html($this.attr('data-html'));
+				$this.attr('data-html',$data_html);
+			}
+			if($this.attr('data-val')){
+				$data_val = $this.val();
+				$this.val($this.attr('data-val'));
+				$this.attr('data-val',$data_val);
+			}
+		});
+	},
+	'pushBaidu':function(){
+		var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+	}
+},
 'mobile':{//移动端专用
 	'jump': function(){
 		if( cms.domain_m && (feifei.browser.domain != cms.domain_m) ){
@@ -35,7 +85,7 @@ var feifei = {
 	},
 	'nav': function(){
 		$("#ff-nav-btn").bind('click', function(){
-			$('#ff-nav-btn-item').toggleClass("hidden");
+			$('#ff-nav-btn-item').toggleClass("hidden").toggleClass("d-none");
 		});
 	},
 	'goback': function(){
@@ -51,10 +101,14 @@ var feifei = {
 			$.ajaxSetup({ 
 				cache: true 
 			});
-			$("<link>").attr({ rel: "stylesheet",type: "text/css",href: "https://cdn.bootcss.com/flickity/2.0.9/flickity.min.css"}).appendTo("head");
-			$.getScript("https://cdn.bootcss.com/flickity/2.0.9/flickity.pkgd.min.js", function(){
+			$("<link>").attr({
+				rel: "stylesheet",
+				type: "text/css",
+				href: cms.root+"Public/jquery.flickity/2.1.1/flickity.min.css"
+			}).appendTo("head");
+			$.getScript(cms.root+"Public/jquery.flickity/2.1.1/flickity.pkgd.min.js", function(){
 				$(".ff-gallery").each(function(i){
-					$index = $(this).find('.btn-success').index()*1;
+					$index = $(this).find('.gallery-active').index()*1;
 					if($index > 3){
 						$index = $index-3;
 					}else{
@@ -63,6 +117,8 @@ var feifei = {
 					$(this).flickity({
 						cellAlign: 'left',
 						freeScroll: true,
+						lazyLoad: true,
+						contain: true,
 						prevNextButtons: false,
 						resize: true,
 						initialIndex: $index,
@@ -101,20 +157,20 @@ var feifei = {
 			}else{
 				$('#'+$id).fadeOut("slow");
 			}
-		});	
+		});
 	}
 },
 'language':{//简繁转换
 	's2t':function(){
 		if(feifei.browser.language=='zh-hk' || feifei.browser.language=='zh-tw'){
-			$.getScript("http://cdn.feifeicms.co/jquery/s2t/0.1.0/s2t.min.js", function(data, status, jqxhr) {
+			$.getScript("//cdn.daicuo.cc/jquery.s2t/0.1.0/s2t.min.js", function(data, status, jqxhr) {
 				$(document.body).s2t();//$.s2t(data);
 			});
 		}
 	},
 	't2s':function(){
 		if(feifei.browser.language=='zh-cn'){
-			$.getScript("http://cdn.feifeicms.co/jquery/s2t/0.1.0/s2t.min.js", function(data, status, jqxhr) {
+			$.getScript("//cdn.daicuo.cc/jquery.s2t/0.1.0/s2t.min.js", function(data, status, jqxhr) {
 				$(document.body).t2s();//$.s2t(data);
 			});
 		}
@@ -129,7 +185,8 @@ var feifei = {
 			$.get($(this).attr('data-url')+$page, function(data){
 				if(data){
 					$($id).append(data);
-					$this.attr('data-page',$page);
+					$this.attr("data-page",$page);
+					$($id+" .ff-img").lazyload();
 				}else{
 					$this.hide();
 					$this.unbind("click");
@@ -144,14 +201,36 @@ var feifei = {
 		  if(event.keyCode==37 && prev!=undefined) location=prev; 
 		  if(event.keyCode==39 && next!=undefined) location=next; 
 	  });
-  }
+  },
+	'scroll': function(){
+		if( $(".ff-page-scroll").length ){
+			var $e = $(".ff-page-scroll").eq(0);
+			$(window).bind('scroll', function(){
+				$this = $(this);
+				$page = $e.attr('data-page')*1+1;
+				$id = $e.attr('data-target');
+				if( ($(this).scrollTop() + $(window).height()) >= $(document).height() ){
+					$.get($e.attr('data-url')+$page, function(data){
+						if(data){
+							$(".ff-page-scroll").eq(0).attr("data-page",$page);
+							$($id).append(data);
+							$($id+" .ff-img").lazyload();
+						}else{
+							$(".ff-page-scroll").remove();
+							$this.unbind("scroll");
+						}
+					},'html');
+				}
+			});
+		}
+	}
 },
 'alert':{//提示
 	'success':function($id, $tips){
-		$($id).html('<div class="alert alert-success fade in"><a href="#" class="close" data-dismiss="alert">&times;</a><strong>成功！</strong>'+$tips+'</label>');
+		$($id).html('<div class="alert alert-success"><a href="#" class="close" data-dismiss="alert">&times;</a><strong>成功！</strong>'+$tips+'</div>');
 	},
 	'warning':function($id, $tips){
-		$($id).html('<div class="alert alert-warning fade in"><a href="#" class="close" data-dismiss="alert">&times;</a><strong>警告！</strong>'+$tips+'</label>');
+		$($id).html('<div class="alert alert-warning"><a href="#" class="close" data-dismiss="alert">&times;</a><strong>警告！</strong>'+$tips+'</div>');
 	}
 },
 'image': {//图片
@@ -159,7 +238,7 @@ var feifei = {
 		$.ajaxSetup({
 			cache: true
 		});
-		$.getScript("http://cdn.bootcss.com/jquery_lazyload/1.9.7/jquery.lazyload.min.js", function(response, status) {
+		$.getScript(cms.root+"Public/jquery.lazyload/1.9.7/jquery.lazyload.min.js", function(response, status) {
 			$("img.ff-img").lazyload({
 				placeholder : cms.root+"Public/images/no.jpg",
 				effect : "fadeIn",
@@ -176,14 +255,14 @@ var feifei = {
 				html: true
 		});
 		$(".glyphicon-phone").on('show.bs.popover', function () {
-			$(".glyphicon-phone").attr('data-content','<img class="ff-qrcode" src="http://cdn.feifeicms.co/qrcode/1.0/?w=150&h=150&url='+encodeURIComponent(feifei.browser.url)+'"/>');
+			$(".glyphicon-phone").attr('data-content','<img class="ff-qrcode" src="//cdn.feifeicms.co/qrcode/1.0/?w=150&h=150&url='+encodeURIComponent(feifei.browser.url)+'"/>');
 		})
 	},
 	'vcode':function(){//安全码
 		return '<label><img class="ff-vcode-img" src="'+cms.root+'index.php?s=Vcode-Index"></label>';
 	},
-	'slide':function(){
-		$('.ff-slide').carousel({interval: $('.ff-slide').attr('data-interval')});
+	'slide':function(){//轮播幻灯
+		$('.ff-slide').carousel({interval: $('.ff-slide').attr('data-interval')*1});
 	}
 },
 'vcode': {//验证码
@@ -204,96 +283,88 @@ var feifei = {
 	}
 },
 'search': {//搜索
+	'keydown': function(){//回车 4.1update
+		$(".ff-search input").keyup(function(event){
+			if(event.keyCode == 13){
+				$form = $(this).parents('form');
+				$wd = $form.find('.ff-wd').val();
+				$action = $form.attr('data-action');
+				if(!$wd){
+					$form.find('.ff-wd').focus();
+					$form.find('.ff-wd').attr('data-toggle','tooltip').attr('data-placement','bottom').attr('title','请输入关键字').tooltip('show');
+					return false;
+				}
+				if($action){
+					location.href = $action.replace('FFWD',encodeURIComponent($wd));
+					return false;
+				}
+			}
+		});
+	},
 	'dropdown': function(){//下拉菜单
 		$(".ff-search .dropdown-menu li a").on("click", function(){
 			$form = $(this).parents('form');
-			$action = $form.find('button[data-action]');
-			if($action.attr('data-action') && $(this).attr('data-action')){
-				$action.attr('data-action', $(this).attr('data-action'));
+			if($(this).attr('data-action')){
+				$form.attr('data-sid','');
+				$form.attr('data-action', $(this).attr('data-action'));
 				$form.find('.dropdown-toggle .title').html($(this).html());
 			}
 		});
 	},
-	'keydown': function(){//回车
-		$(".ff-search input").keyup(function(event){
-			if(event.keyCode == 13){
-				$form = $(this).parents('form');
-				$action = $form.find('button[data-action]').attr('data-action');
-				if(!$action){
-					$action = cms.root+'index.php?s=vod-search-name-FFWD';
-				}
-				$wd = $form.find('.ff-wd').val();
-				if($wd){
-					location.href = $action.replace('FFWD',encodeURIComponent($wd));
-				}else{
-					$(this).find('.ff-wd').focus();
-					$(this).find('.ff-wd').attr('data-toggle','tooltip').attr('data-placement','bottom').attr('title','请输入关键字').tooltip('show');
-				}
+	'submit': function(){//搜索表单 4.1update
+		$(".ff-search").on("submit", function(){
+			$wd = $(this).find('.ff-wd').val();
+			$action = $(this).attr('data-action');
+			if(!$wd){
+				$(this).find('.ff-wd').focus();
+				$(this).find('.ff-wd').attr('data-toggle','tooltip').attr('data-placement','bottom').attr('title','请输入关键字').tooltip('show');
+				return false;
+			}
+			if($action){
+				location.href = $action.replace('FFWD',encodeURIComponent($wd));
 				return false;
 			}
 		});
-	},	
-	'submit': function(){//提交表单
-		$(".ff-search button").on("click", function(){
-			$action = $(this).attr('data-action');
-			if($action){
-				$(".ff-search").attr('action', $action);
-			}
-		});
-		$(".ff-search").on("submit", function(){
-			$action = $(this).attr('action');
-			$wd = $(this).find('.ff-wd').val();
-			if(!$action){
-				$action = cms.root+'index.php?s=vod-search-name-FFWD';
-			}
-			if($wd){
-				location.href = $action.replace('FFWD',encodeURIComponent($wd));
-			}else{
-				$(this).find('.ff-wd').focus();
-				$(this).find('.ff-wd').attr('data-toggle','tooltip').attr('data-placement','bottom').attr('title','请输入关键字').tooltip('show');
-			}
-			return false;
-		});
 	},
-	'autocomplete': function(){
-		$.ajaxSetup({ 
-			cache: true 
-		});
-		$.getScript("http://cdn.bootcss.com/jquery.devbridge-autocomplete/1.2.26/jquery.autocomplete.min.js", function(response, status) {
-			if($('.ff-search').eq(0).attr('data-sid') == 2){
-				$ajax_url = cms.root+'index.php?g=home&m=search&a=news';
-			}else{
-				$ajax_url = cms.root+'index.php?g=home&m=search&a=vod';
-			}
-			$('.ff-wd').autocomplete({
-				serviceUrl : $ajax_url,
-				params: {'limit': 10},
-				paramName: 'wd',
-				maxHeight: 400,
-				transformResult: function(response) {
-					var obj = $.parseJSON(response);
-					return {
-						suggestions: $.map(obj.data, function(dataItem) {
-							return { value: dataItem.name, data: dataItem.link };
-						})
-					};
-				},
-				onSelect: function (suggestion) {
-					location.href = suggestion.data;
-					//alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
-				}
+	'autocomplete': function(){//3.5增加搜索结果控制 4.1update
+		var $limit = $('.ff-search').eq(0).attr('data-limit')*1;
+		var $sid = $('.ff-search').eq(0).attr('data-sid')*1;
+		if( $limit > 0){
+			$.ajaxSetup({
+				cache: true
 			});
-		});
+			$.getScript(cms.root+"Public/jquery.devbridge-autocomplete/1.4.7/jquery.autocomplete.min.js", function(response, status) {
+				$('.ff-wd').autocomplete({
+					serviceUrl : cms.root+'index.php?g=home&m=search&a=api&sid='+$sid,
+					params: {'limit': $limit},
+					paramName: 'wd',
+					maxHeight: 400,
+					transformResult: function(response) {
+						var obj = $.parseJSON(response);
+						return {
+							suggestions: $.map(obj.data, function(dataItem) {
+								return { value: dataItem.name, data: dataItem.link };
+							})
+						};
+					},
+					onSelect: function (suggestion) {
+						location.href = suggestion.data;
+						//alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+					}
+				});
+			});
+		}
 	},
 	'hot':function(){
 		$(".ff-search [data-toggle='tooltip']").tooltip();
 		$("#ff-site-hot").load(cms.root+"index.php?s=ajax-site_hot");
 	}
 },
-'record': {//记录
+'record': {//云记录
 	'load': function(){
 		feifei.record.get();
 		feifei.record.set();
+		feifei.record.del();
 	},
 	'get':function(){
 		//后端获取记录
@@ -310,14 +381,14 @@ var feifei = {
 			var _this = this;
 			$(this).popover("show");
 			$(".popover").on("mouseleave", function () {
-					$(_this).popover('hide');
+				$(_this).popover('hide');
 			});
 		}).on("mouseleave", function () {
 			var _this = this;
 			setTimeout(function () {
-					if (!$(".popover:hover").length) {
-							$(_this).popover("hide");
-					}
+				if (!$(".popover:hover").length) {
+					$(_this).popover("hide");
+				}
 			}, 300);
 		});
 	},
@@ -351,6 +422,25 @@ var feifei = {
 				});
 			}
 		});
+	},
+	'del':function(){//删除记录
+		$('body').on('click', 'a.ff-record-delete', function(e){
+			var $this = $(this);
+			if($(this).attr("data-id")){
+				$.ajax({
+					url: cms.root+'index.php?g=home&m=record&a=delete&id='+$(this).attr("data-id"),
+					cache: false,
+					dataType: 'json',
+					success: function(json){
+						if(json.status == 200){
+							location.reload();
+						}else{
+							$this.attr('title', json.info).tooltip('show');
+						}
+					}
+				});
+			}
+		});
 	}
 },
 'score': {//评分
@@ -359,9 +449,9 @@ var feifei = {
 			$.ajaxSetup({ 
 				cache: true 
 			});
-			$("<link>").attr({ rel: "stylesheet",type: "text/css",href: "http://cdn.bootcss.com/raty/2.7.1/jquery.raty.min.css"}).appendTo("head");
+			$("<link>").attr({ rel: "stylesheet",type: "text/css",href: "//lib.baomitu.com/raty/2.7.1/jquery.raty.min.css"}).appendTo("head");
 			//
-			$.getScript("http://cdn.bootcss.com/raty/2.7.1/jquery.raty.min.js", function(response, status) {
+			$.getScript("//lib.baomitu.com/raty/2.7.1/jquery.raty.min.js", function(response, status) {
 				$(".ff-score").each(function(i){
 					$(".ff-score").eq(i).find('.ff-score-raty').raty({ 
 						starType: 'i',
@@ -452,31 +542,7 @@ var feifei = {
 				$id = $(".ff-share");
 			}
 			$($id).html('<div class="bdsharebuttonbox"><a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a><a href="#" class="bds_bdysc" data-cmd="bdysc" title="分享到百度云收藏"></a><a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a></div>');
-			window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":""+$size+""},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-		}
-	}
-},
-'scenario': {//分集剧情
-	'load':function(){
-		var $max = $(".ff-scenario-pill").attr('data-max')*1;
-		var $count = $(".ff-scenario-content dl").length;
-		var $li = 0;
-		var $list = '';
-		if($count > 0 && $max>0){
-			for($i=0; $i<$count; $i++){
-				if(($i+$max) > $count){
-					$max_ji = $count;
-				}else{
-					$max_ji = $i+$max;
-				}
-				if($i % $max == 0){
-					$li++;
-					$list+='<li><a href="javascript:;" data-target=".ff-scenario-'+$li+'" data-toggle="pill">第'+($i+1)+'-'+$max_ji+'集</a></li>';
-				}
-				$(".ff-scenario-content dl").eq($i).addClass('ff-scenario-'+$li);
-			}
-			$('.ff-scenario-pill').html($list);
-			$('.ff-scenario-pill a:first').tab('show');
+			window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":""+$size+""},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
 		}
 	}
 },
@@ -485,9 +551,6 @@ var feifei = {
 		if($('.ff-forum[data-type=feifei]').length){
 			this.system();
 		}
-		if($('.ff-forum[data-type=uyan]').length){
-			this.uyan();
-		}
 		if($('.ff-forum[data-type=changyan]').length){
 			this.changyan();
 		}
@@ -495,7 +558,7 @@ var feifei = {
 	'system': function(){
 		//初始加载
 		if($('.ff-forum[data-type=feifei]').attr('data-sid')){
-			feifei.forum.ajax('.ff-forum', $('.ff-forum[data-type=feifei]').attr('data-sid'), $('.ff-forum[data-type=feifei]').attr('data-id'), 0, 1);
+			feifei.forum.ajax('.ff-forum', $('.ff-forum[data-type=feifei]').attr('data-sid'), $('.ff-forum[data-type=feifei]').attr('data-id'),$('.ff-forum[data-type=feifei]').attr('data-pid'), 0, 1);
 		}
 		//登录验证
 		$(".ff-forum").on("focus", 'textarea[name=forum_content]', function(){ //表单提交
@@ -539,6 +602,26 @@ var feifei = {
 				});
 			}
 		});
+		//删除评论
+		$('body').on('click', 'a.forum-delete', function(){
+			var $this = $(this);
+			var $id = $(this).attr("data-id");
+			if($id){
+				$.ajax({
+					type: 'get',
+					url: cms.root+'index.php?s=forum-delete-id-'+$id,
+					timeout: 3000,
+					dataType:'json',
+					success:function(json){
+						if(json.status == 200){
+							location.reload();
+						}else{
+							$this.attr('title', json.info).tooltip('show');
+						}
+					}
+				});
+			}
+		});
 		//发表评论
 		$("body").on("submit", '.ff-forum-post', function(){
 			var $this = $(this);
@@ -552,7 +635,7 @@ var feifei = {
 						feifei.forum.reply(json.data.forum_pid);//更新回复数及显示回复链接按钮
 						setTimeout(function(){$('.forum-reply[data-id='+json.data.forum_pid+']').fadeOut('slow')}, 2000);//移除回复表单容器
 					}else{//主题贴
-						setTimeout(function(){feifei.forum.ajax('.ff-forum-item', json.data.forum_sid, json.data.forum_cid, 1, 1)}, 2000);
+						setTimeout(function(){feifei.forum.ajax('.ff-forum-item', json.data.forum_sid, json.data.forum_cid, 0, 1, 1)}, 2000);
 						setTimeout(function(){$this.hide()}, 3000);
 					}
 					//发表评论后是否需要刷新网页
@@ -569,10 +652,10 @@ var feifei = {
 			return false;
 		});
 	},
-	'ajax': function($target, $sid, $cid, $ismore, $page){//AJAX加载系统评论
+	'ajax': function($target, $sid, $cid, $pid, $ismore, $page){//AJAX加载系统评论
 		$.ajax({
 			type: 'get',
-			url: cms.root+'index.php?s=forum-ajax-sid-'+$sid+'-cid-'+$cid+'-ismore-'+$ismore+'-p-'+$page,
+			url: cms.root+'index.php?s=forum-ajax-sid-'+$sid+'-cid-'+$cid+'-pid-'+$pid+'-ismore-'+$ismore+'-p-'+$page,
 			timeout: 3000,
 			error: function(){
 				$($target).html('评论加载失败，请刷新...');
@@ -596,10 +679,6 @@ var feifei = {
 			}
 		});
 	},
-	'uyan': function(){
-		$(".ff-forum").html('<div id="uyan_frame"></div>');
-		$.getScript("http://v2.uyan.cc/code/uyan.js?uid="+$('.ff-forum[data-type=uyan]').attr('data-uyan-uid'));
-	},
 	'changyan': function(){
 		$appid = $('.ff-forum[data-type=changyan]').attr('data-cy-id');
 		$conf = $('.ff-forum[data-type=changyan]').attr('data-cy-conf');
@@ -618,20 +697,34 @@ var feifei = {
 		}
 	}
 },
-'playurl': {//播放地址
-	'download': function(){
-		if($(".ff-playurl-down").length){
-			$.getScript("http://cdn.feifeicms.co/download/xunlei.js",function(){
-				//3.4增加鼠标点击去掉文件名标题
-				$(".ff-playurl-down input[type=text]").focus(function(){
-					$(this).val($(this).parent().find('input[type=checkbox]').val());
-				});
-			});
+'scenario': {//分集剧情
+	'load':function(){
+		var $max = $(".ff-scenario-pill").attr('data-max')*1;
+		var $count = $(".ff-scenario-content dl").length;
+		var $li = 0;
+		var $list = '';
+		if($count > 0 && $max>0){
+			for($i=0; $i<$count; $i++){
+				if(($i+$max) > $count){
+					$max_ji = $count;
+				}else{
+					$max_ji = $i+$max;
+				}
+				if($i % $max == 0){
+					$li++;
+					$list+='<li><a href="javascript:;" data-target=".ff-scenario-'+$li+'" data-toggle="pill">第'+($i+1)+'-'+$max_ji+'集</a></li>';
+				}
+				$(".ff-scenario-content dl").eq($i).addClass('ff-scenario-'+$li);
+			}
+			$('.ff-scenario-pill').html($list);
+			$('.ff-scenario-pill a:first').tab('show');
 		}
-	},
+	}
+},
+'playurl': {//播放地址
 	'tongji': function(){
 		if($("#cms_player").length){
-			$.getScript("http://cdn.feifeicms.co/tongji/3.5/");
+			$.getScript("//cdn.feifeicms.co/tongji/4.3/?"+~(-new Date()/36e5));
 		}
 	},
 	'active':function(){
@@ -646,11 +739,32 @@ var feifei = {
 			$(this).parent().addClass('active');
 		});
 	},
+	'error':function(){//报错
+		$('.ff-playurl-error').on('click',function(){
+			$id = $(this).attr('data-id');
+			$sid = $(this).attr('data-sid');
+			$pid = $(this).attr('data-pid');
+			$content = $(this).attr('data-content')+' 第'+$sid+'组 第'+$pid+'集';
+			$.ajax({
+				type: 'POST',
+				url: cms.root+'index.php?s=forum-update',
+				timeout: 3000,
+				dataType:'json',
+				data: "forum_sid=24&forum_pid="+$sid+"&forum_cid="+$id+"&forum_cid_ep="+$pid+"&forum_content="+$content,
+				error: function(){
+					alert('网络异常');
+				},
+				success: function(json){
+					alert('提交成功');
+				}
+			});
+		});
+	},
 	'more':function(){//...效果
 		$('.ff-playurl').each(function(i){
 			$this = $(this);
 			$config = $this.attr('data-more')*1;
-			$max = $this.find('li a').size();
+			$max = $this.find('li a').length;
 			if(($config+2) < $max && $config>0){
 				$max_html = $($this.find('li:last').prop("outerHTML")).find('a').attr('href','#all').html('全部...');
 				$max_html = '<li class="'+$this.find('li').attr('class')+'">'+$max_html.prop("outerHTML")+'</li>';
@@ -678,13 +792,13 @@ var feifei = {
 			if($trysee > 0){
 				window.setTimeout(function(){
 					$.get(cms.root+'index.php?s=vod-vip-action-trysee-id-'+$vod_id+'-sid-'+$vod_sid+'-pid-'+$vod_pid, function(html){
-						$('#cms_player').html(html).removeClass("embed-responsive-4by3").css({"height":"auto"});
+						$('#cms_player').html(html).removeClass("embed-responsive-4by3").removeClass("embed-responsive-16by9").css({"height":"auto"});
 					},'html');
 				},1000*60*$trysee);
 			}else{
 				$('#cms-player-vip .cms-player-box').html($tips);
 				$('#cms-player-vip .cms-player-iframe').hide();
-				$('#cms_player').removeClass("embed-responsive-4by3").css({"height":"auto"});
+				$('#cms_player').removeClass("embed-responsive-4by3").removeClass("embed-responsive-16by9").css({"height":"auto"});
 			}
 			//支付影币按钮
 			$('#cms_player').on("click",".vod-price",function(){
@@ -702,15 +816,80 @@ var feifei = {
 		}else{
 			//拥有VIP观看权限
 		}
+	},
+	'xunlei':function(){//迅雷下载
+		if($(".ff-playurl-down").length){
+			$.getScript("//open.thunderurl.com/thunder-link.js",function(){
+				//单个下载
+				jQuery(".thunder-link").unbind("click").bind("click",function(){
+					thunderLink.newTask({
+						downloadDir: '',
+						tasks: [{
+							name: jQuery(this).attr("data-name"),
+							url: jQuery(this).attr("data-url")
+						}]
+					});
+					return false;
+				});
+				//批量下载任务
+				jQuery(".thunder-link-all").unbind("click").bind("click",function(){
+					var index=jQuery(this).attr("data-sid");
+					var tasks=[];
+					jQuery("input[name='thunder-link-all-"+index+"']:checked").each(function(i){
+						tasks.push({"name":jQuery(this).attr("data-name"),"url":jQuery(this).val()});
+					});
+					thunderLink.newTask({
+						downloadDir: '',
+						installFile: '',
+						taskGroupName: '',
+						tasks: tasks
+					});
+				});
+				//3.4增加鼠标点击去掉文件名标题
+				$(".ff-playurl-down input[type=text]").focus(function(){
+					$(this).val($(this).parent().find('input[type=checkbox]').val());
+				});
+				//3.8增加失去焦点事件
+				$(".ff-playurl-down input[type=text]").blur(function(){
+					$(this).val($(this).parent().find('input[type=checkbox]').attr('data-name')+' '+$(this).parent().find('input[type=checkbox]').val());
+				});
+			});
+		}
 	}
 },
 'user':{
+	//基础功能
 	'load':function(){
-		//静态模式获取用户基本信息
+		//不同模式下处理用户基础信息
 		feifei.user.islogin();
-		//模态框登录
+		//模态框登录事件
 		$("body").on("click",".user-login-modal",function(){
 			feifei.user.login();
+			return false;
+		});
+		//积分在线充值事件
+		$("body").on("click",".user-score-payment",function(){
+			feifei.user.ScorePayment();
+			return false;
+		});
+		//积分卡密充值事件
+		$("body").on("click",".user-score-card",function(){
+			feifei.user.ScoreCard();
+			return false;
+		});
+		//积分升级VIP事件
+		$("body").on("click",".user-score-upvip",function(){
+			feifei.user.ScoreUpvip();
+			return false;
+		});
+		//用户中心修改邮箱
+		$("body").on("click",".user-change-email", function(){
+			feifei.user.ChangeEmail();
+			return false;
+		});
+		//用户中心修改密码
+		$("body").on("click",".user-change-pwd", function(){
+			feifei.user.ChangePwd();
 			return false;
 		});
 	},
@@ -734,7 +913,7 @@ var feifei = {
 			});
 		}
 	},
-	//模态框登录
+	//AJAX模态框登录
 	'login':function(){
 		$('.ff-modal').remove();
 		$.ajax({
@@ -774,28 +953,18 @@ var feifei = {
 			}
 		});
 	},
-	//用户中心
-	'center':function(){
-		//用户中心续费VIP时长
-		$("body").on("click",".user-upvip",function(){
-			feifei.user.upvip();
-		});
-		//用户中心充值
-		$("body").on("click",".user-pay", function(){
-			feifei.user.pay();
-		});		
-		//修改邮箱
-		$("body").on("click",".user-change-email", function(){
-			feifei.user.email();
-		});
-		//修改密码
-		$("body").on("click",".user-change-pwd", function(){
-			feifei.user.repwd();
-		});
-	},	
+	//积分在线充值
+	'ScorePayment':function(){
+		feifei.order.payment();
+	},
+	//积分卡密充值
+	'ScoreCard':function(){
+		feifei.order.card();
+	},
 	//升级VIP
-	'upvip':function(){
+	'ScoreUpvip':function(){
 		$('.ff-modal').remove();
+		$('.modal-backdrop').hide();
 		$.ajax({
 			type: 'get',
 			url: cms.root+'index.php?s=user-ajax_upvip',
@@ -804,6 +973,7 @@ var feifei = {
 				$('body').append($html);
 				$('.ff-modal').modal('show');
 				$(".user-upvip-form").on('submit',function(e){
+					$data_url = $(this).attr('data-url');//卡密充值地址
 					$.ajax({
 						url: $(this).attr('action'),
 						type: 'POST',
@@ -825,7 +995,12 @@ var feifei = {
 								setTimeout(function(){$(".ff-modal").modal('hide');$('.modal-backdrop').hide();feifei.user.login();}, 2000);
 							}else if(json.status == 501){
 								feifei.alert.warning('.user-upvip-alert', '影币不足，共需要'+json.info+'个影币，请先冲值！');
-								setTimeout(function(){$(".ff-modal").modal('hide');$('.modal-backdrop').hide();feifei.user.pay();}, 2000);
+								//有卡密售卖的时候
+								if($data_url && $('.user-upvip-btn').length){
+									$('.user-upvip-btn').removeClass('hidden').removeClass('d-none').show();
+								}else{
+									setTimeout(function(){$(".ff-modal").modal('hide');$('.modal-backdrop').hide();feifei.order.payment();}, 2000);
+								}
 							}else{
 								feifei.alert.warning('.user-upvip-alert', json.info);
 							}
@@ -838,29 +1013,10 @@ var feifei = {
 			}
 		});
 	},
-	//用户充值
-	'pay':function(){
-		$('.ff-modal').remove();
-		$.ajax({
-			type: 'get',
-			url: cms.root+'index.php?s=user-ajax_pay',
-			timeout: 3000,
-			success:function($html){
-				$('body').append($html);
-				$('.ff-modal').modal('show');
-				$(".user-pay-form").on('submit',function(e){
-					if($(".user-pay-form input[name=score_ext]").val() < $(".user-pay-form").attr('data-small')){
-						feifei.alert.warning('.user-pay-alert', '每次至少充值<strong>'+$(".user-pay-form").attr('data-small')+'</strong>元');
-						return false;
-					}
-					setTimeout(function(){$(".ff-modal").modal('hide');$('.modal-backdrop').hide();}, 5000);
-				});
-			}
-		});
-	},
 	//修改邮箱
-	'email':function(){
+	'ChangeEmail':function(){
 		$('.ff-modal').remove();
+		$('.modal-backdrop').hide();
 		$.ajax({
 			type: 'get',
 			url: cms.root+'index.php?s=user-ajax_email',
@@ -901,7 +1057,7 @@ var feifei = {
 		});
 	},
 	//修改密码
-	'repwd':function(){
+	'ChangePwd':function(){
 		$('.ff-modal').remove();
 		$.ajax({
 			type: 'get',
@@ -943,32 +1099,70 @@ var feifei = {
 		});
 	}
 },
-'cms':{
-	'nav': function($id){
-		$id = $('nav[data-dir]').attr('data-dir');
-		$($id).addClass("active");
-	},
-	'collapse':function(){
-		$('body').on("click", "[data-toggle=ff-collapse]", function(){
-			$this = $(this);
-			$($this.attr('data-target')).toggle();
-			$($this.attr('data-default')).toggle();
-			if($this.attr('data-html')){
-				$data_html = $this.html();
-				$this.html($this.attr('data-html'));
-				$this.attr('data-html',$data_html);
+'order':{//影币订单模块
+	'payment':function(){//在线充值付款界面
+		$('.ff-modal').remove();
+		$('.modal-backdrop').hide();
+		$.ajax({
+			type: 'get',
+			url: cms.root+'index.php?s=payment-index',
+			timeout: 3000,
+			success:function($html){
+				$('body').append($html);
+				$('.ff-modal').modal('show');
+				$(".forum-payment").on('submit',function(e){
+					if($(".forum-payment input[name=score_ext]").val() < $(".forum-payment").attr('data-small')){
+						feifei.alert.warning('.user-pay-alert', '每次至少充值<strong>'+$(".forum-payment").attr('data-small')+'</strong>元');
+						return false;
+					}
+					setTimeout(function(){$(".ff-modal").modal('hide');$('.modal-backdrop').hide();}, 5000);
+				});
 			}
-			if($this.attr('data-val')){
-				$data_val = $this.val();
-				$this.val($this.attr('data-val'));
-				$this.attr('data-val',$data_val);
+		});
+	},
+	'card':function(){//卡密充值付款界面
+		$('.ff-modal').remove();
+		$('.modal-backdrop').hide();
+		$.ajax({
+			type: 'get',
+			url: cms.root+'index.php?s=payment-card',
+			timeout: 3000,
+			success:function($html){
+				$('body').append($html);
+				$('.ff-modal').modal('show');
+				$(".forum-card").on('submit',function(e){
+					$.ajax({
+						url: $(this).attr('action'),
+						type: 'POST',
+						dataType: 'json',
+						timeout: 3000,
+						data: $(this).serialize(),
+						beforeSend: function(xhr){
+							$('.alert-card').html('Loading...');
+						},
+						error : function(){
+							$('.alert-card').html('请求失败，请刷新网页。');
+						},
+						success: function(json){
+							if(json.status == 200){
+								feifei.alert.success('.alert-card', '充值成功，谢谢支持。');
+								setTimeout(function(){location.reload();}, 2000);
+							}else{
+								feifei.alert.warning('.alert-card', json.info);
+							}
+						},
+						complete: function(xhr){
+						}
+					});
+					return false;
+				});
 			}
 		});
 	}
 }
 //end
 };
-/*#ff-search #wd #ff-goback .ff-gallery .ff-raty .ff-img .ff-share .ff-safecode .ff-reply*/
+/*.ff-search #wd #ff-goback .ff-gallery .ff-raty .ff-img .ff-share .ff-safecode .ff-reply*/
 $(document).ready(function(){
 	if(feifei.browser.useragent.mobile){
 		feifei.mobile.jump();
@@ -979,6 +1173,7 @@ $(document).ready(function(){
 	feifei.user.load();
 	feifei.cms.nav();//
 	feifei.cms.collapse();
+	feifei.cms.pushBaidu();
 	feifei.search.dropdown();
 	feifei.search.autocomplete();
 	feifei.search.hot();//
@@ -989,18 +1184,19 @@ $(document).ready(function(){
 	feifei.image.qrcode();//
 	feifei.playurl.tongji();
 	feifei.playurl.more();
+	feifei.playurl.error();
 	feifei.playurl.dropdown();
-	feifei.playurl.download();
 	feifei.playurl.active();
+	feifei.playurl.xunlei();
 	feifei.page.more();
 	feifei.page.keydown();//
+	feifei.page.scroll();
 	feifei.updown.click();
 	feifei.score.raty();
 	feifei.scenario.load();
 	feifei.forum.load();
 	feifei.vcode.load();
 	feifei.scroll.totop('ff-totop',10);
-	feifei.user.center();
 	feifei.record.load();//
 	feifei.hits.load();
 	feifei.share.baidu();

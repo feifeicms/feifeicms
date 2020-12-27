@@ -1,3 +1,4 @@
+cms_player.yun=false;
 var cms_player_fun = {
 	'weburl' : unescape(window.location.href),
 	'isinstall': true,
@@ -36,7 +37,7 @@ var cms_player_fun = {
 	},
 	'install': function(){
 		cms_player_fun.isinstall = false;
-		cms_player_fun.$('xigua_iframe').src = "http://cdn.feifeicms.co/player/3.0/install.php?playname=xigua";
+		cms_player_fun.$('xigua_iframe').src = "//cdn.feifeicms.co/player/1.0/install.php?playname=xigua";
 		cms_player_fun.$('xigua_player').style.display = 'none';
 	},
 	'buffer': function(){
